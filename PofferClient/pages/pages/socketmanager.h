@@ -8,11 +8,13 @@
 class SocketManager : public QObject
 {
     Q_OBJECT
+    QByteArray response;
 public:
     explicit SocketManager(QObject *parent = nullptr);
 
     void connectToServer(QString ip, quint16 port);
     void sendData(const QByteArray &data);
+    QByteArray get_response();
 
 signals:
     void connected();

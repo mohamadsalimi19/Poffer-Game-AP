@@ -4,12 +4,10 @@ SocketManager::SocketManager(QObject *parent)
     : QObject{parent}
 {
     mySocket = new QTcpSocket(this);
-
-    // اتصال سیگنال‌ها فقط یک بار
-    connect(mySocket, &QTcpSocket::connected, this, &SocketManager::onConnected);
-    connect(mySocket, &QTcpSocket::readyRead, this, &SocketManager::onDataRead);
-    connect(mySocket, &QTcpSocket::bytesWritten, this, &SocketManager::onWritten);
-    connect(mySocket, &QTcpSocket::disconnected, this, &SocketManager::onDisconnected);
+    connect(mySocket, SIGNAL(connected()), this, SLOT(onConnected()));
+    connect(mySocket, SIGNAL(readyRead()), this, SLOT(onDataRead()));
+    connect(mySocket, SIGNAL(bytesWritten(qint64)), this, SLOT(onWritten(qint64)));
+    connect(mySocket, SIGNAL(disconnected()), this, SLOT(onDisconnected()));
 }
 
 void SocketManager::connectToServer(QString ip, quint16 port) {
@@ -30,8 +28,8 @@ void SocketManager::sendData(const QByteArray &data) {
 
 void SocketManager::onDataRead() {
     QByteArray data = mySocket->readAll();
+    response = data;
     qDebug() << "Data read:" << data;
-    // اینجا میتونی داده را پردازش کنی یا سیگنال بفرستی
 }
 
 void SocketManager::onWritten(qint64 bytes) {
@@ -40,6 +38,12 @@ void SocketManager::onWritten(qint64 bytes) {
 
 void SocketManager::onDisconnected() {
     qDebug() << "Disconnected from server.";
+}
+QByteArray SocketManager::get_response(){
+
+    return response;
+
+
 }
 
 

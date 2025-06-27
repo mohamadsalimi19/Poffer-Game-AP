@@ -41,43 +41,13 @@
     <set>Qt::AlignmentFlag::AlignCenter</set>
    </property>
   </widget>
-  <widget class="QWidget" name="verticalLayoutWidget">
-   <property name="geometry">
-    <rect>
-     <x>190</x>
-     <y>140</y>
-     <width>601</width>
-     <height>351</height>
-    </rect>
-   </property>
-   <layout class="QVBoxLayout" name="verticalLayout">
-    <item>
-     <widget class="QTextEdit" name="textEdit"/>
-    </item>
-    <item>
-     <widget class="QTextEdit" name="textEdit_3"/>
-    </item>
-    <item>
-     <widget class="QTextEdit" name="textEdit_5"/>
-    </item>
-    <item>
-     <widget class="QTextEdit" name="textEdit_6"/>
-    </item>
-    <item>
-     <widget class="QTextEdit" name="textEdit_4"/>
-    </item>
-    <item>
-     <widget class="QTextEdit" name="textEdit_2"/>
-    </item>
-   </layout>
-  </widget>
   <widget class="QWidget" name="verticalLayoutWidget_2">
    <property name="geometry">
     <rect>
-     <x>80</x>
-     <y>140</y>
+     <x>60</x>
+     <y>150</y>
      <width>106</width>
-     <height>351</height>
+     <height>291</height>
     </rect>
    </property>
    <layout class="QVBoxLayout" name="verticalLayout_2">
@@ -144,7 +114,7 @@ QLineEdit:selected {
      </widget>
     </item>
     <item>
-     <widget class="QLabel" name="label_9">
+     <widget class="QLabel" name="label_10">
       <property name="styleSheet">
        <string notr="true">/* بک‌گراند کل ویجت اصلی سیاه */
 QWidget {
@@ -206,7 +176,69 @@ QLineEdit:selected {
      </widget>
     </item>
     <item>
-     <widget class="QLabel" name="label_4">
+     <widget class="QLabel" name="label_14">
+      <property name="styleSheet">
+       <string notr="true">/* بک‌گراند کل ویجت اصلی سیاه */
+QWidget {
+    background-color: #000000;  /* سیاه */
+    color: #e0e0e0;             /* رنگ متن روشن */
+    font-family: &quot;Segoe UI&quot;, Tahoma, Geneva, Verdana, sans-serif;
+    font-size: 14px;
+}
+
+/* لیبل‌ها متن سفید و فونت کمی بزرگ‌تر */
+QLabel {
+    color: #ffffff;
+    font-weight: 600;
+    font-size: 16px;
+}
+
+/* دکمه‌ها با رنگ پس‌زمینه خاکستری تیره و متن سفید */
+QPushButton {
+    background-color: #2c2c2c;
+    color: #ffffff;
+    border: 1.5px solid #4caf50; /* حاشیه سبز */
+    border-radius: 8px;
+    padding: 8px 16px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+}
+
+QPushButton:hover {
+    background-color: #4caf50;  /* سبز روشن */
+    color: #000000;             /* متن مشکی */
+}
+
+/* ورودی متن */
+QLineEdit {
+    background-color: #1a1a1a;
+    color: #e0e0e0;
+    border: 1px solid #4caf50;
+    border-radius: 6px;
+    padding: 6px 10px;
+}
+
+QLineEdit:hover {
+    border-color: #81c784;  /* سبز روشن‌تر */
+}
+
+/* انتخاب متن در ورودی */
+QLineEdit:selected {
+    background-color: #4caf50;
+    color: #000000;
+}
+</string>
+      </property>
+      <property name="text">
+       <string>username</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignmentFlag::AlignCenter</set>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QLabel" name="label_11">
       <property name="styleSheet">
        <string notr="true">/* بک‌گراند کل ویجت اصلی سیاه */
 QWidget {
@@ -268,7 +300,7 @@ QLineEdit:selected {
      </widget>
     </item>
     <item>
-     <widget class="QLabel" name="label_5">
+     <widget class="QLabel" name="label_12">
       <property name="styleSheet">
        <string notr="true">/* بک‌گراند کل ویجت اصلی سیاه */
 QWidget {
@@ -330,7 +362,7 @@ QLineEdit:selected {
      </widget>
     </item>
     <item>
-     <widget class="QLabel" name="label_6">
+     <widget class="QLabel" name="label_13">
       <property name="styleSheet">
        <string notr="true">/* بک‌گراند کل ویجت اصلی سیاه */
 QWidget {
@@ -391,10 +423,79 @@ QLineEdit:selected {
       </property>
      </widget>
     </item>
-    <item>
-     <widget class="QLabel" name="label_7">
-      <property name="styleSheet">
-       <string notr="true">/* بک‌گراند کل ویجت اصلی سیاه */
+   </layout>
+  </widget>
+  <widget class="QLineEdit" name="lineEdit">
+   <property name="geometry">
+    <rect>
+     <x>170</x>
+     <y>150</y>
+     <width>599</width>
+     <height>41</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QLineEdit" name="lineEdit_2">
+   <property name="geometry">
+    <rect>
+     <x>170</x>
+     <y>200</y>
+     <width>599</width>
+     <height>41</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QLineEdit" name="lineEdit_3">
+   <property name="geometry">
+    <rect>
+     <x>170</x>
+     <y>250</y>
+     <width>599</width>
+     <height>41</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QLineEdit" name="lineEdit_4">
+   <property name="geometry">
+    <rect>
+     <x>170</x>
+     <y>300</y>
+     <width>599</width>
+     <height>41</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QLineEdit" name="lineEdit_5">
+   <property name="geometry">
+    <rect>
+     <x>170</x>
+     <y>350</y>
+     <width>599</width>
+     <height>41</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QLineEdit" name="lineEdit_6">
+   <property name="geometry">
+    <rect>
+     <x>170</x>
+     <y>400</y>
+     <width>599</width>
+     <height>41</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="pushButton">
+   <property name="geometry">
+    <rect>
+     <x>640</x>
+     <y>540</y>
+     <width>161</width>
+     <height>51</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">/* بک‌گراند کل ویجت اصلی سیاه */
 QWidget {
     background-color: #000000;  /* سیاه */
     color: #e0e0e0;             /* رنگ متن روشن */
@@ -444,16 +545,10 @@ QLineEdit:selected {
     color: #000000;
 }
 </string>
-      </property>
-      <property name="text">
-       <string>username</string>
-      </property>
-      <property name="alignment">
-       <set>Qt::AlignmentFlag::AlignCenter</set>
-      </property>
-     </widget>
-    </item>
-   </layout>
+   </property>
+   <property name="text">
+    <string>next</string>
+   </property>
   </widget>
  </widget>
  <resources/>

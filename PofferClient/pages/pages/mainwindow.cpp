@@ -21,11 +21,9 @@ MainWindow::~MainWindow()
 
 void MainWindow::on_pushButton_clicked()
 {
-    SocketManager* ms = new SocketManager();
-    ms->connectToServer("example.com", 80);
-    QString request = "GET / HTTP/1.1\r\nHost: example.com\r\nConnection: close\r\n\r\n";
-    ms->sendData(request.toUtf8());
-
+    signup* sp = new signup();
+    this->close();
+    sp->show();
 
 /*
     if(!signedIn){
