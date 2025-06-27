@@ -1,0 +1,461 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>signup</class>
+ <widget class="QWidget" name="signup">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>848</width>
+    <height>688</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <widget class="QLabel" name="label">
+   <property name="geometry">
+    <rect>
+     <x>120</x>
+     <y>30</y>
+     <width>571</width>
+     <height>81</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">QLabel {
+    background-color: #2ecc71;  /* سبز روشن */
+	background-color: rgb(70, 169, 255);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-weight: bold;
+    font-size: 44px;
+}
+</string>
+   </property>
+   <property name="text">
+    <string>signup page</string>
+   </property>
+   <property name="alignment">
+    <set>Qt::AlignmentFlag::AlignCenter</set>
+   </property>
+  </widget>
+  <widget class="QWidget" name="verticalLayoutWidget">
+   <property name="geometry">
+    <rect>
+     <x>190</x>
+     <y>140</y>
+     <width>601</width>
+     <height>351</height>
+    </rect>
+   </property>
+   <layout class="QVBoxLayout" name="verticalLayout">
+    <item>
+     <widget class="QTextEdit" name="textEdit"/>
+    </item>
+    <item>
+     <widget class="QTextEdit" name="textEdit_3"/>
+    </item>
+    <item>
+     <widget class="QTextEdit" name="textEdit_5"/>
+    </item>
+    <item>
+     <widget class="QTextEdit" name="textEdit_6"/>
+    </item>
+    <item>
+     <widget class="QTextEdit" name="textEdit_4"/>
+    </item>
+    <item>
+     <widget class="QTextEdit" name="textEdit_2"/>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QWidget" name="verticalLayoutWidget_2">
+   <property name="geometry">
+    <rect>
+     <x>80</x>
+     <y>140</y>
+     <width>106</width>
+     <height>351</height>
+    </rect>
+   </property>
+   <layout class="QVBoxLayout" name="verticalLayout_2">
+    <item>
+     <widget class="QLabel" name="label_8">
+      <property name="styleSheet">
+       <string notr="true">/* بک‌گراند کل ویجت اصلی سیاه */
+QWidget {
+    background-color: #000000;  /* سیاه */
+    color: #e0e0e0;             /* رنگ متن روشن */
+    font-family: &quot;Segoe UI&quot;, Tahoma, Geneva, Verdana, sans-serif;
+    font-size: 14px;
+}
+
+/* لیبل‌ها متن سفید و فونت کمی بزرگ‌تر */
+QLabel {
+    color: #ffffff;
+    font-weight: 600;
+    font-size: 16px;
+}
+
+/* دکمه‌ها با رنگ پس‌زمینه خاکستری تیره و متن سفید */
+QPushButton {
+    background-color: #2c2c2c;
+    color: #ffffff;
+    border: 1.5px solid #4caf50; /* حاشیه سبز */
+    border-radius: 8px;
+    padding: 8px 16px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+}
+
+QPushButton:hover {
+    background-color: #4caf50;  /* سبز روشن */
+    color: #000000;             /* متن مشکی */
+}
+
+/* ورودی متن */
+QLineEdit {
+    background-color: #1a1a1a;
+    color: #e0e0e0;
+    border: 1px solid #4caf50;
+    border-radius: 6px;
+    padding: 6px 10px;
+}
+
+QLineEdit:hover {
+    border-color: #81c784;  /* سبز روشن‌تر */
+}
+
+/* انتخاب متن در ورودی */
+QLineEdit:selected {
+    background-color: #4caf50;
+    color: #000000;
+}
+</string>
+      </property>
+      <property name="text">
+       <string>name</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignmentFlag::AlignCenter</set>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QLabel" name="label_9">
+      <property name="styleSheet">
+       <string notr="true">/* بک‌گراند کل ویجت اصلی سیاه */
+QWidget {
+    background-color: #000000;  /* سیاه */
+    color: #e0e0e0;             /* رنگ متن روشن */
+    font-family: &quot;Segoe UI&quot;, Tahoma, Geneva, Verdana, sans-serif;
+    font-size: 14px;
+}
+
+/* لیبل‌ها متن سفید و فونت کمی بزرگ‌تر */
+QLabel {
+    color: #ffffff;
+    font-weight: 600;
+    font-size: 16px;
+}
+
+/* دکمه‌ها با رنگ پس‌زمینه خاکستری تیره و متن سفید */
+QPushButton {
+    background-color: #2c2c2c;
+    color: #ffffff;
+    border: 1.5px solid #4caf50; /* حاشیه سبز */
+    border-radius: 8px;
+    padding: 8px 16px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+}
+
+QPushButton:hover {
+    background-color: #4caf50;  /* سبز روشن */
+    color: #000000;             /* متن مشکی */
+}
+
+/* ورودی متن */
+QLineEdit {
+    background-color: #1a1a1a;
+    color: #e0e0e0;
+    border: 1px solid #4caf50;
+    border-radius: 6px;
+    padding: 6px 10px;
+}
+
+QLineEdit:hover {
+    border-color: #81c784;  /* سبز روشن‌تر */
+}
+
+/* انتخاب متن در ورودی */
+QLineEdit:selected {
+    background-color: #4caf50;
+    color: #000000;
+}
+</string>
+      </property>
+      <property name="text">
+       <string>lastname</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignmentFlag::AlignCenter</set>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QLabel" name="label_4">
+      <property name="styleSheet">
+       <string notr="true">/* بک‌گراند کل ویجت اصلی سیاه */
+QWidget {
+    background-color: #000000;  /* سیاه */
+    color: #e0e0e0;             /* رنگ متن روشن */
+    font-family: &quot;Segoe UI&quot;, Tahoma, Geneva, Verdana, sans-serif;
+    font-size: 14px;
+}
+
+/* لیبل‌ها متن سفید و فونت کمی بزرگ‌تر */
+QLabel {
+    color: #ffffff;
+    font-weight: 600;
+    font-size: 16px;
+}
+
+/* دکمه‌ها با رنگ پس‌زمینه خاکستری تیره و متن سفید */
+QPushButton {
+    background-color: #2c2c2c;
+    color: #ffffff;
+    border: 1.5px solid #4caf50; /* حاشیه سبز */
+    border-radius: 8px;
+    padding: 8px 16px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+}
+
+QPushButton:hover {
+    background-color: #4caf50;  /* سبز روشن */
+    color: #000000;             /* متن مشکی */
+}
+
+/* ورودی متن */
+QLineEdit {
+    background-color: #1a1a1a;
+    color: #e0e0e0;
+    border: 1px solid #4caf50;
+    border-radius: 6px;
+    padding: 6px 10px;
+}
+
+QLineEdit:hover {
+    border-color: #81c784;  /* سبز روشن‌تر */
+}
+
+/* انتخاب متن در ورودی */
+QLineEdit:selected {
+    background-color: #4caf50;
+    color: #000000;
+}
+</string>
+      </property>
+      <property name="text">
+       <string>password</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignmentFlag::AlignCenter</set>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QLabel" name="label_5">
+      <property name="styleSheet">
+       <string notr="true">/* بک‌گراند کل ویجت اصلی سیاه */
+QWidget {
+    background-color: #000000;  /* سیاه */
+    color: #e0e0e0;             /* رنگ متن روشن */
+    font-family: &quot;Segoe UI&quot;, Tahoma, Geneva, Verdana, sans-serif;
+    font-size: 14px;
+}
+
+/* لیبل‌ها متن سفید و فونت کمی بزرگ‌تر */
+QLabel {
+    color: #ffffff;
+    font-weight: 600;
+    font-size: 16px;
+}
+
+/* دکمه‌ها با رنگ پس‌زمینه خاکستری تیره و متن سفید */
+QPushButton {
+    background-color: #2c2c2c;
+    color: #ffffff;
+    border: 1.5px solid #4caf50; /* حاشیه سبز */
+    border-radius: 8px;
+    padding: 8px 16px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+}
+
+QPushButton:hover {
+    background-color: #4caf50;  /* سبز روشن */
+    color: #000000;             /* متن مشکی */
+}
+
+/* ورودی متن */
+QLineEdit {
+    background-color: #1a1a1a;
+    color: #e0e0e0;
+    border: 1px solid #4caf50;
+    border-radius: 6px;
+    padding: 6px 10px;
+}
+
+QLineEdit:hover {
+    border-color: #81c784;  /* سبز روشن‌تر */
+}
+
+/* انتخاب متن در ورودی */
+QLineEdit:selected {
+    background-color: #4caf50;
+    color: #000000;
+}
+</string>
+      </property>
+      <property name="text">
+       <string>email</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignmentFlag::AlignCenter</set>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QLabel" name="label_6">
+      <property name="styleSheet">
+       <string notr="true">/* بک‌گراند کل ویجت اصلی سیاه */
+QWidget {
+    background-color: #000000;  /* سیاه */
+    color: #e0e0e0;             /* رنگ متن روشن */
+    font-family: &quot;Segoe UI&quot;, Tahoma, Geneva, Verdana, sans-serif;
+    font-size: 14px;
+}
+
+/* لیبل‌ها متن سفید و فونت کمی بزرگ‌تر */
+QLabel {
+    color: #ffffff;
+    font-weight: 600;
+    font-size: 16px;
+}
+
+/* دکمه‌ها با رنگ پس‌زمینه خاکستری تیره و متن سفید */
+QPushButton {
+    background-color: #2c2c2c;
+    color: #ffffff;
+    border: 1.5px solid #4caf50; /* حاشیه سبز */
+    border-radius: 8px;
+    padding: 8px 16px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+}
+
+QPushButton:hover {
+    background-color: #4caf50;  /* سبز روشن */
+    color: #000000;             /* متن مشکی */
+}
+
+/* ورودی متن */
+QLineEdit {
+    background-color: #1a1a1a;
+    color: #e0e0e0;
+    border: 1px solid #4caf50;
+    border-radius: 6px;
+    padding: 6px 10px;
+}
+
+QLineEdit:hover {
+    border-color: #81c784;  /* سبز روشن‌تر */
+}
+
+/* انتخاب متن در ورودی */
+QLineEdit:selected {
+    background-color: #4caf50;
+    color: #000000;
+}
+</string>
+      </property>
+      <property name="text">
+       <string>phonenumber</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignmentFlag::AlignCenter</set>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QLabel" name="label_7">
+      <property name="styleSheet">
+       <string notr="true">/* بک‌گراند کل ویجت اصلی سیاه */
+QWidget {
+    background-color: #000000;  /* سیاه */
+    color: #e0e0e0;             /* رنگ متن روشن */
+    font-family: &quot;Segoe UI&quot;, Tahoma, Geneva, Verdana, sans-serif;
+    font-size: 14px;
+}
+
+/* لیبل‌ها متن سفید و فونت کمی بزرگ‌تر */
+QLabel {
+    color: #ffffff;
+    font-weight: 600;
+    font-size: 16px;
+}
+
+/* دکمه‌ها با رنگ پس‌زمینه خاکستری تیره و متن سفید */
+QPushButton {
+    background-color: #2c2c2c;
+    color: #ffffff;
+    border: 1.5px solid #4caf50; /* حاشیه سبز */
+    border-radius: 8px;
+    padding: 8px 16px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+}
+
+QPushButton:hover {
+    background-color: #4caf50;  /* سبز روشن */
+    color: #000000;             /* متن مشکی */
+}
+
+/* ورودی متن */
+QLineEdit {
+    background-color: #1a1a1a;
+    color: #e0e0e0;
+    border: 1px solid #4caf50;
+    border-radius: 6px;
+    padding: 6px 10px;
+}
+
+QLineEdit:hover {
+    border-color: #81c784;  /* سبز روشن‌تر */
+}
+
+/* انتخاب متن در ورودی */
+QLineEdit:selected {
+    background-color: #4caf50;
+    color: #000000;
+}
+</string>
+      </property>
+      <property name="text">
+       <string>username</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignmentFlag::AlignCenter</set>
+      </property>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

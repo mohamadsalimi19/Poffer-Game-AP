@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/">
+        <file>check_signin.txt</file>
+    </qresource>
+</RCC>
