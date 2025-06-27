@@ -2,7 +2,7 @@
 #define SIGNUP_H
 
 #include <QWidget>
-
+#include<login.h>
 namespace Ui {
 class signup;
 }
@@ -43,5 +43,5 @@ private slots:
 private:
     Ui::signup *ui;
 };
-
+QString hashPasswordSimple(const QString& password);
 #endif // SIGNUP_H

@@ -107,9 +107,6 @@ void signup::makejason(){
     jason_to_send = doc.toJson(QJsonDocument::Compact);
 }
 
-
-
-
 bool signup::read_jason(QByteArray res){
     auto docjason = QJsonDocument::fromJson(res);
     QJsonObject mainobject = docjason.object();
@@ -122,13 +119,6 @@ bool signup::read_jason(QByteArray res){
     return false;
 
     }
-
-
-
-
-
-
-
 
 void signup::on_pushButton_clicked()
 {
@@ -149,17 +139,23 @@ void signup::on_pushButton_clicked()
     }
 
     else{
-        makejason();
-       SocketManager* mysocket;
-       mysocket->connectToServer("192.168.88.229",80);
-       mysocket->sendData(jason_to_send);
-       QByteArray response = mysocket->get_response();
-       if(read_jason(response)){
-
-           // menu
-
+      //  makejason();
+      // SocketManager* mysocket;
+     //  mysocket->connectToServer("192.168.88.229",80);
+     //  mysocket->sendData(jason_to_send);
+      // QByteArray response = mysocket->get_response();
+       if(1){
+           Login* lp = new Login();
+           this->close();
+           lp->show();
        }
     }
 
 
 }
+
+void signup::on_pushButton_2_clicked()
+{
+
+}
+
