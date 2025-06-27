@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>958</width>
+    <height>668</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>MainWindow</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <widget class="QPushButton" name="pushButton">
+    <property name="geometry">
+     <rect>
+      <x>250</x>
+      <y>270</y>
+      <width>421</width>
+      <height>111</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">/* کل ویجت‌ها فونت Roboto با وزن نرمال */
+QWidget {
+    font-family: &quot;Roboto&quot;, &quot;Segoe UI&quot;, Tahoma, Geneva, Verdana, sans-serif;
+    font-size: 40px;
+    color: #2c3e50;
+}
+
+/* برای QLabel های تیتر */
+QLabel#titleLabel {
+    font-weight: bold;
+    font-size: 48px;
+    color: #34495e;
+    letter-spacing: 1px;
+}
+
+/* استایل دکمه */
+QPushButton {
+    background-color: #1abc9c;
+    color: white;
+    font-weight: bold;
+    font-size: 44px;
+    border-radius: 5px;
+    padding: 8px 15px;
+}
+
+QPushButton:hover {
+    background-color: #16a085;
+}
+
+/* لینک‌ها (مثلا QLabel با متن لینک) */
+QLabel#linkLabel {
+    color: #2980b9;
+    text-decoration: underline;
+}
+QLabel#linkLabel:hover {
+    color: #1abc9c;
+}
+</string>
+    </property>
+    <property name="text">
+     <string>START</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label">
+    <property name="geometry">
+     <rect>
+      <x>130</x>
+      <y>30</y>
+      <width>661</width>
+      <height>111</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QLabel {
+    background-color: #2ecc71;  /* سبز روشن */
+    color: white;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-weight: bold;
+    font-size: 24px;
+}
+</string>
+    </property>
+    <property name="text">
+     <string>WELCOM TO POFFER GAME</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignmentFlag::AlignCenter</set>
+    </property>
+   </widget>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>958</width>
+     <height>25</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
