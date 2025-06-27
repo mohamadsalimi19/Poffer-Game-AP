@@ -40,6 +40,7 @@ private slots:
     void on_lineEdit_6_textChanged(const QString &arg1);
     void on_pushButton_clicked();
 
+
 private:
     Ui::signup *ui;
 };

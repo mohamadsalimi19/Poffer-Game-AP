@@ -4,6 +4,7 @@
 #include<ostream>
 #include<QSettings>
 #include<socketmanager.h>
+#include<menu.h>
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
@@ -22,9 +23,10 @@ MainWindow::~MainWindow()
 void MainWindow::on_pushButton_clicked()
 {
     signup* sp = new signup();
+    menu* mp = new menu();
     this->close();
-    sp->show();
-
+    //sp->show();
+    mp->show();
 /*
     if(!signedIn){
         this->close();

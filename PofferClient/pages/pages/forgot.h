@@ -10,10 +10,24 @@ class Forgot;
 class Forgot : public QWidget
 {
     Q_OBJECT
+    QString phonenum;
+    QString newpass;
+    void make_json();
+    bool read_json(QByteArray ar);
+    QByteArray json_to_send;
 
 public:
     explicit Forgot(QWidget *parent = nullptr);
     ~Forgot();
+
+private slots:
+    void on_lineEdit_textChanged(const QString &arg1);
+
+    void on_lineEdit_2_textEdited(const QString &arg1);
+
+    void on_pushButton_clicked();
+
+    void on_pushButton_2_clicked();
 
 private:
     Ui::Forgot *ui;

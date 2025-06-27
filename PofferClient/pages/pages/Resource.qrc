@@ -1,5 +1,7 @@
 <RCC>
     <qresource prefix="/">
         <file>check_signin.txt</file>
+        <file>back.avif</file>
+        <file>images.jpg</file>
     </qresource>
 </RCC>

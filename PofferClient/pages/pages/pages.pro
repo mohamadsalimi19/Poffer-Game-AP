@@ -10,23 +10,29 @@ QT += network
 
 SOURCES += \
     forgot.cpp \
+    information.cpp \
     login.cpp \
     main.cpp \
     mainwindow.cpp \
+    menu.cpp \
     signup.cpp \
     socketmanager.cpp
 
 HEADERS += \
     forgot.h \
+    information.h \
     login.h \
     mainwindow.h \
+    menu.h \
     signup.h \
     socketmanager.h
 
 FORMS += \
     forgot.ui \
+    information.ui \
     login.ui \
     mainwindow.ui \
+    menu.ui \
     signup.ui
 
 # Default rules for deployment.
