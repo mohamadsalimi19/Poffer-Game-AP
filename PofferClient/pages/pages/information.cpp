@@ -7,6 +7,7 @@
 #include <QJsonObject>
 #include<QMessageBox>
 #include<signup.h>
+#include<menu.h>
 information::information(QWidget *parent)
     : QWidget(parent)
     , ui(new Ui::information)
@@ -235,12 +236,21 @@ void information::on_pushButton_2_clicked()
             phone_num = newphone_num;
             ui->textBrowser_6->setText(phone_num);
         }
-
-
     }
     else{
         QMessageBox::warning(this,"warning","your phone num is wrong");
     }
 
+}
+
+
+void information::on_pushButton_7_clicked()
+{
+
+    this->close();
+    menu* mn = new menu();
+    mn->set(username,name,lastname,gmail,phone_num,pass);
+    this->close();
+    mn->show();
 }
 

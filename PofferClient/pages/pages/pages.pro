@@ -10,30 +10,36 @@ QT += network
 
 SOURCES += \
     forgot.cpp \
+    game.cpp \
     information.cpp \
     login.cpp \
     main.cpp \
     mainwindow.cpp \
     menu.cpp \
     signup.cpp \
-    socketmanager.cpp
+    socketmanager.cpp \
+    start.cpp
 
 HEADERS += \
     forgot.h \
+    game.h \
     information.h \
     login.h \
     mainwindow.h \
     menu.h \
     signup.h \
-    socketmanager.h
+    socketmanager.h \
+    start.h
 
 FORMS += \
     forgot.ui \
+    game.ui \
     information.ui \
     login.ui \
     mainwindow.ui \
     menu.ui \
-    signup.ui
+    signup.ui \
+    start.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

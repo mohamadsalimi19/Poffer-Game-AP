@@ -4,6 +4,7 @@
 #include <QResizeEvent>
 #include<QPushButton>
 #include<information.h>
+#include"start.h"
 menu::menu(QWidget *parent)
     : QWidget(parent)
     , ui(new Ui::menu)
@@ -157,5 +158,15 @@ void menu::on_pushButton_3_clicked()
     inft->set(username,name,lastname,gmail,phone_num,password);
     this->close();
     inft->show();
+}
+
+
+void menu::on_pushButton_2_clicked(){
+
+    start* sp = new start();
+    this->close();
+    sp->show();
+
+
 }
 
