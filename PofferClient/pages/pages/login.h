@@ -18,7 +18,12 @@ class Login : public QWidget
     Q_OBJECT
     QString username;
     QString pass;
+    QString name;
+    QString lastname;
+    QString gmail;
+    QString phone_num;
     QByteArray json_to_send;
+
 
 public:
     explicit Login(QWidget *parent = nullptr);
@@ -33,6 +38,8 @@ private slots:
     void on_lineEdit_2_textEdited(const QString &arg1);
 
     void on_pushButton_clicked();
+
+    void on_pushButton_2_clicked();
 
 private:
     Ui::Login *ui;

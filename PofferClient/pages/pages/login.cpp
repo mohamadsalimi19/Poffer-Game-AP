@@ -1,6 +1,8 @@
 #include "login.h"
 #include "ui_login.h"
 #include<signup.h>
+#include<forgot.h>
+#include<menu.h>
 Login::Login(QWidget *parent)
     : QWidget(parent)
     , ui(new Ui::Login)
@@ -40,21 +42,19 @@ void Login::make_json(){
     QJsonDocument doc(mainobject);
     json_to_send = doc.toJson(QJsonDocument::Compact);
 }
-
-
-
-
-
-
 bool Login::read_json(QByteArray res){
     QJsonDocument doc = QJsonDocument::fromJson(res);
     QJsonObject mainobj = doc.object();
-    auto playload = mainobj["payload"].toObject();
+    auto payload = mainobj["payload"].toObject();
     if(mainobj["response"].toString()=="auth_success"){
+        name = payload["name"].toString();
+        lastname = payload["lastname"].toString();
+        gmail = payload["email"].toString();
+        phone_num = payload["phone_number"].toString();
         return true;
     }
     else{
-        QMessageBox::warning(this,"warning", playload["message"].toString());
+        QMessageBox::warning(this,"warning", payload["message"].toString());
         return false;
     }
 
@@ -68,15 +68,18 @@ void Login::on_pushButton_clicked()
     //make_json();
     //mysocket->sendData(json_to_send);
     if(read_json(mysocket->get_response())){
-
-        // menu code
-
+        menu* mp = new menu();
+        mp->set(username,name,lastname,gmail,phone_num,pass);
+        this->close();
+        mp->show();
     }
 }
 
 
 void Login::on_pushButton_2_clicked()
 {
-
+    Forgot* fp = new Forgot();
+    this->close();
+    fp->show();
 }
 

@@ -40,8 +40,11 @@ private slots:
     void on_lineEdit_6_textChanged(const QString &arg1);
     void on_pushButton_clicked();
 
+
 private:
     Ui::signup *ui;
 };
 QString hashPasswordSimple(const QString& password);
+bool isValidIranPhoneNumber(const QString& phone);
+bool isValidEmail(const QString& email);
 #endif // SIGNUP_H
