@@ -50,7 +50,7 @@ bool Login::read_json(QByteArray res){
         name = payload["name"].toString();
         lastname = payload["lastname"].toString();
         gmail = payload["email"].toString();
-        gmail = payload["phone_number"].toString();
+        phone_num = payload["phone_number"].toString();
         return true;
     }
     else{
@@ -69,7 +69,7 @@ void Login::on_pushButton_clicked()
     //mysocket->sendData(json_to_send);
     if(read_json(mysocket->get_response())){
         menu* mp = new menu();
-        mp->set(username,name,lastname,gmail,phone_num);
+        mp->set(username,name,lastname,gmail,phone_num,pass);
         this->close();
         mp->show();
     }

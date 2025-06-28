@@ -102,7 +102,7 @@ void signup::makejason(){
     payloadObject["phone_number"] = phone_num;
     QJsonObject mainobject;
     mainobject["Command"] = "signup";
-    mainobject["payloadObject"] = payloadObject;
+    mainobject["payload"] = payloadObject;
     QJsonDocument doc(mainobject);
     jason_to_send = doc.toJson(QJsonDocument::Compact);
 }
@@ -110,7 +110,7 @@ void signup::makejason(){
 bool signup::read_jason(QByteArray res){
     auto docjason = QJsonDocument::fromJson(res);
     QJsonObject mainobject = docjason.object();
-    if(mainobject["Command"]=="auth_success"){
+    if(mainobject["response"]=="auth_success"){
         return true;
     }
     else{

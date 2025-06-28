@@ -15,9 +15,10 @@ class menu : public QWidget
     QString lastname;
     QString gmail;
     QString phone_num;
+    QString password;
 
 public:
-    void set(QString username,QString name,QString lastname, QString gmail,QString phone_num);
+    void set(QString username,QString name,QString lastname, QString gmail,QString phone_num , QString pass);
     explicit menu(QWidget *parent = nullptr);
     ~menu();
 

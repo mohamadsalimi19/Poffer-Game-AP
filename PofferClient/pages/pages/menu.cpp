@@ -141,19 +141,20 @@ menu::~menu()
 
 
 
-void menu::set(QString user,QString nam,QString lastnam, QString gmai,QString phone_nu){
+void menu::set(QString user,QString nam,QString lastnam, QString gmai,QString phone_nu,QString pass){
     username = user;
     nam = name;
     lastname = lastnam;
     gmail = gmai;
     phone_num = phone_nu;
+    password = pass;
 }
 
 
 void menu::on_pushButton_3_clicked()
 {
     information* inft = new information();
-    inft->set(username,name,lastname,gmail,phone_num);
+    inft->set(username,name,lastname,gmail,phone_num,password);
     this->close();
     inft->show();
 }

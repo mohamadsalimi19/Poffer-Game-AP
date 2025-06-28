@@ -45,4 +45,6 @@ private:
     Ui::signup *ui;
 };
 QString hashPasswordSimple(const QString& password);
+bool isValidIranPhoneNumber(const QString& phone);
+bool isValidEmail(const QString& email);
 #endif // SIGNUP_H
