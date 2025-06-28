@@ -42,6 +42,10 @@ public:
     void start_round();
     Card find_card(QString rank , QString suit);
     void show_turn(Card p , Card o);
+    QVector<Card> get_list_card_of_turn(QVector<Card> c , QString s, bool a);
+    void choose_Card(QVector<Card> c ,  QString starter , bool a);
+private slots:
+
 private:
     Ui::Poffer *ui;
 };
