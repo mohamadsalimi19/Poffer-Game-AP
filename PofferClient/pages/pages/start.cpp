@@ -5,20 +5,14 @@
 #include<QLabel>
 #include<QVBoxLayout>
 #include<QTimer>
+#include"poffer.h"
 start::start(QWidget *parent)
     : QWidget(parent)
     , ui(new Ui::start)
 {
-
-    start_game();
-
+    client_socket = new SocketManager();
     ui->setupUi(this);
-
-
-
-
-
-
+    start_game();
 }
 
 void start::set_username(QString un){
@@ -76,27 +70,25 @@ QLabel {
     layout->addWidget(statue);
     //client_socket->connectToServer()
     // client_socket->sendData(make_requset_json());
+
+
+
+
     QTimer *timer = new QTimer(this);
     connect(timer, &QTimer::timeout, this, [=]() {
         if(1) {
             statue->hide();
             timer->stop();
+            Poffer* g = new Poffer(client_socket, username, this->parentWidget());
+            g->setGeometry(this->geometry());
+            g->show();
+            this->close();
+
+
         }
     });
     timer->start(100);
 }
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
