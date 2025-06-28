@@ -51,6 +51,10 @@ public:
     Suit getSuit() const;
     Rank getRank() const;
 
+    bool operator == (const Card & other) const { // for use remove one function
+        return (suit == other.suit && rank == other.rank);
+    }
+
 private:
     Suit suit;
     Rank rank;

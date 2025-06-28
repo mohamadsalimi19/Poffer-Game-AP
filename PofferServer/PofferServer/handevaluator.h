@@ -31,6 +31,7 @@ public:
     };
 
     HandEvaluator()= default;
+    // heart of evaluation hands this function. check Rank hand then return it
     HandRank evaluateHand(const Hand& hand);
 
 private:

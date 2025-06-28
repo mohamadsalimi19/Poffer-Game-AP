@@ -175,6 +175,10 @@ bool HandEvaluator::isSinglePair(const QVector<Card>& sortedCards){
     }
 }
 //////////////////////////////////////////////////////////////////////////////
+/// \brief HandEvaluator::evaluateHand
+/// \param hand
+/// \return HandRank
+///this function return a value to show value hand that possible to compare and determine wiinner
 HandEvaluator::HandRank HandEvaluator::evaluateHand(const Hand& hand){
     try{
         if(hand.getCards().size() != 5){
