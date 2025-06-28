@@ -1,36 +1,15 @@
 #include <QCoreApplication>
 #include <QDebug>
-#include "hand.h"          // کلاسی که دست را نگه می‌دارد
-#include "handevaluator.h" // کلاسی که می‌خواهیم تست کنیم
+#include <QFile>
+#include <QJsonObject>
+#include "usermanager.h" // کلاسی که می‌خواهیم تست کنیم
 
-// یک تابع کمکی برای چاپ کردن نام رتبه دست (برای خوانایی بهتر خروجی)
-QString rankToString(HandEvaluator::HandRank rank) {
-    switch (rank) {
-        case HandEvaluator::INVALID_HAND: return "INVALID_HAND";
-        case HandEvaluator::MESSY_HAND: return "MESSY_HAND (High Card)";
-        case HandEvaluator::SINGLE_PAIR: return "SINGLE_PAIR";
-        case HandEvaluator::DOUBLE_PAIR: return "DOUBLE_PAIR";
-        case HandEvaluator::THREE_OF_A_KIND: return "THREE_OF_A_KIND";
-        case HandEvaluator::SERIES: return "SERIES (Straight)";
-        case HandEvaluator::MSC_HAND: return "MSC_HAND (Flush)";
-        case HandEvaluator::PENTHOUSE: return "PENTHOUSE (Full House)";
-        case HandEvaluator::FOUR_OF_A_KIND: return "FOUR_OF_A_KIND";
-        case HandEvaluator::ORDER_HAND: return "ORDER_HAND (Straight Flush)";
-        case HandEvaluator::GOLDEN_HAND: return "GOLDEN_HAND";
-        default: return "UNKNOWN_RANK";
-    }
-}
-
-// تابع اصلی تست
-void runTest(const QString& testName, const Hand& hand, HandEvaluator::HandRank expectedRank) {
-    HandEvaluator evaluator;
-    HandEvaluator::HandRank actualRank = evaluator.evaluateHand(hand);
-
-    qDebug().nospace() << "--- Running Test: " << testName << " ---";
-    if (actualRank == expectedRank) {
-        qDebug() << "    [PASSED] Expected: " << rankToString(expectedRank) << ", Got: " << rankToString(actualRank);
+void printTestResult(const QString& testName, bool passed)
+{
+    if (passed) {
+        qDebug() << "[PASSED]" << testName;
     } else {
-        qDebug() << "    [FAILED] Expected: " << rankToString(expectedRank) << ", Got: " << rankToString(actualRank);
+        qDebug() << "[FAILED]" << testName;
     }
 }
 
@@ -38,54 +17,42 @@ int main(int argc, char *argv[])
 {
     QCoreApplication a(argc, argv);
 
-    // --- شروع تست‌ها ---
+    qDebug() << "--- Starting UserManager Test ---";
 
-    // تست ۱: یک دست Penthouse (فول هاوس)
-    Hand penthouseHand;
-    penthouseHand.addCard(Card(Card::DIAMOND, Card::KING));
-    penthouseHand.addCard(Card(Card(Card::COIN, Card::KING)));
-    penthouseHand.addCard(Card(Card::GOLD, Card::KING));
-    penthouseHand.addCard(Card(Card::DOLLAR, Card::FIVE));
-    penthouseHand.addCard(Card(Card::DIAMOND, Card::FIVE));
-    runTest("Penthouse (Full House)", penthouseHand, HandEvaluator::PENTHOUSE);
+    // قدم ۰: برای هر بار تست، فایل کاربران قبلی را پاک می‌کنیم تا از صفر شروع کنیم
+    QFile::remove("users.json");
+    qDebug() << "Removed old users.json for a clean test.";
 
-    // تست ۲: یک دست Series (سری)
-    Hand seriesHand;
-    seriesHand.addCard(Card(Card::DIAMOND, Card::SIX));
-    seriesHand.addCard(Card(Card::COIN, Card::SEVEN));
-    seriesHand.addCard(Card(Card::GOLD, Card::EIGHT));
-    seriesHand.addCard(Card(Card::DOLLAR, Card::NINE));
-    seriesHand.addCard(Card(Card::DIAMOND, Card::TEN));
-    runTest("Series (Straight)", seriesHand, HandEvaluator::SERIES);
+    // قدم ۱: یک نمونه از مدیر کاربران می‌گیریم
+    UserManager* manager = UserManager::instance();
 
-    // تست ۳: یک دست Single Pair (جفت)
-    Hand pairHand;
-    pairHand.addCard(Card(Card::GOLD, Card::QUEEN));
-    pairHand.addCard(Card(Card::DOLLAR, Card::QUEEN));
-    pairHand.addCard(Card(Card::DIAMOND, Card::TWO));
-    pairHand.addCard(Card(Card::COIN, Card::SIX));
-    pairHand.addCard(Card(Card::GOLD, Card::NINE));
-    runTest("Single Pair", pairHand, HandEvaluator::SINGLE_PAIR);
+    // --- تست ثبت‌نام ---
+    qDebug() << "\n--- Testing Signup ---";
 
-    // تست ۴: یک دست Messy Hand (پوچ)
-    Hand messyHand;
-    messyHand.addCard(Card(Card::GOLD, Card::TWO));
-    messyHand.addCard(Card(Card::DOLLAR, Card::FIVE));
-    messyHand.addCard(Card(Card::DIAMOND, Card::EIGHT));
-    messyHand.addCard(Card(Card::COIN, Card::TEN));
-    messyHand.addCard(Card(Card::GOLD, Card::KING));
-    runTest("Messy Hand (High Card)", messyHand, HandEvaluator::MESSY_HAND);
+    // تست ۱.۱: ثبت‌نام موفق یک کاربر جدید
+    QJsonObject user1_data;
+    user1_data["username"] = "mohammad";
+    user1_data["password_hash"] = "hash123";
+    printTestResult("Successful signup for 'mohammad'", manager->signup(user1_data));
 
-    // تست ۵: یک دست نامعتبر (فقط ۴ کارت)
-    Hand invalidHand;
-    invalidHand.addCard(Card(Card::GOLD, Card::TWO));
-    invalidHand.addCard(Card(Card::DOLLAR, Card::FIVE));
-    invalidHand.addCard(Card(Card::DIAMOND, Card::EIGHT));
-    invalidHand.addCard(Card(Card::COIN, Card::TEN));
-    runTest("Invalid Hand (4 cards)", invalidHand, HandEvaluator::INVALID_HAND);
+    // تست ۱.۲: تلاش برای ثبت‌نام مجدد با همان نام کاربری (باید شکست بخورد)
+    printTestResult("Duplicate signup for 'mohammad'", !manager->signup(user1_data));
 
-    // --- پایان تست‌ها ---
 
-    qDebug() << "\nAll tests finished.";
+    // --- تست ورود ---
+    qDebug() << "\n--- Testing Login ---";
+
+    // تست ۲.۱: ورود موفق با اطلاعات صحیح
+    printTestResult("Successful login for 'mohammad'", manager->login("mohammad", "hash123"));
+
+    // تست ۲.۲: تلاش برای ورود با رمز عبور اشتباه (باید شکست بخورد)
+    printTestResult("Failed login with wrong password", !manager->login("mohammad", "wrong_hash"));
+
+    // تست ۲.۳: تلاش برای ورود با کاربری که وجود ندارد (باید شکست بخورد)
+    printTestResult("Failed login with non-existent user", !manager->login("babak", "any_hash"));
+
+
+    qDebug() << "\n--- UserManager tests finished ---";
+
     return 0; // از برنامه خارج شو
 }

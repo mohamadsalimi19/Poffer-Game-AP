@@ -7,11 +7,15 @@ CONFIG += c++17 cmdline
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+        Test_main.cpp\
         card.cpp \
         deck.cpp \
+        gamesession.cpp \
         hand.cpp \
         handevaluator.cpp \
-        main.cpp
+        #main.cpp \
+        player.cpp \
+        usermanager.cpp
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
@@ -21,5 +25,8 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 HEADERS += \
     card.h \
     deck.h \
+    gamesession.h \
     hand.h \
-    handevaluator.h
+    handevaluator.h \
+    player.h \
+    usermanager.h
