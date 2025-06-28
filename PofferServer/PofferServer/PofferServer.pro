@@ -7,13 +7,12 @@ CONFIG += c++17 cmdline
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
-        Test_main.cpp\
         card.cpp \
         deck.cpp \
         gamesession.cpp \
         hand.cpp \
         handevaluator.cpp \
-        #main.cpp \
+        main.cpp \
         player.cpp \
         usermanager.cpp
 
