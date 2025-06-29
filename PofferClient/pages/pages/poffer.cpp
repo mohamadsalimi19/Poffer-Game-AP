@@ -23,7 +23,12 @@ Poffer::Poffer(SocketManager* socket, QString username, QWidget *parent) :
     connect(this, &Poffer::card_recived, this, &Poffer::choose_Card);
     show_myhand();
     start_round();
-
+    round++;
+    start_round();
+    round++;
+    start_round();
+    start_round();
+    start_round();
 
 }
 bool finish_turn = false;

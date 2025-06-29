@@ -13,6 +13,7 @@ start::start(QWidget *parent)
     client_socket = new SocketManager();
     ui->setupUi(this);
     start_game();
+
 }
 
 void start::set_username(QString un){
@@ -67,16 +68,16 @@ QLabel {
 }
 )");
     QVBoxLayout* layout = new QVBoxLayout(this);
-    layout->addWidget(statue);
-    //client_socket->connectToServer()
-    // client_socket->sendData(make_requset_json());
 
+    layout->addWidget(statue);
+    client_socket->connectToServer("127.0.01",8888);
+    client_socket->sendData(make_requset_json());
 
 
 
     QTimer *timer = new QTimer(this);
     connect(timer, &QTimer::timeout, this, [=]() {
-        if(1) {
+        if(get_start_response()) {
             statue->hide();
             timer->stop();
             Poffer* g = new Poffer(client_socket, username, this->parentWidget());

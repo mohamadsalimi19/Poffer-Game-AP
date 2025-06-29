@@ -181,13 +181,12 @@ void ClientHandler::handleRequestGame(const QJsonObject& /*payload*/)
         qWarning() << "Player" << (m_player ? m_player->getUsername() : "Unauthenticated")
         << "sent a game request at an invalid time.";
         // TODO: می‌توانی یک پیام خطا هم برای کلاینت بفرستی
-        return;
+      //  return;
     }
 
-    qDebug() << "Player" << m_player->getUsername() << "is requesting a game.";
+  //  qDebug() << "Player" << m_player->getUsername() << "is requesting a game.";
 
-    GameManager::instance()->playerWantsToPlay(m_player);
-
+   // GameManager::instance()->playerWantsToPlay(m_player);
     QJsonObject response;
     response["response"] = "waiting_for_opponent";
     sendJson(response);

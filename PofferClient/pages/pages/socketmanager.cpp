@@ -1,5 +1,6 @@
 #include "socketmanager.h"
-
+#include"QMessageBox";
+#include"QJsonObject"
 SocketManager::SocketManager(QObject *parent)
     : QObject{parent}
 {
@@ -15,21 +16,24 @@ void SocketManager::connectToServer(QString ip, quint16 port) {
 }
 
 void SocketManager::onConnected() {
-    qDebug() << "Connected to server!";
+    QMessageBox::warning(nullptr,"con","connected");
 }
 
 void SocketManager::sendData(const QByteArray &data) {
-    if (mySocket->state() == QAbstractSocket::ConnectedState) {
         mySocket->write(data);
-    } else {
-        qDebug() << "Socket is not connected.";
-    }
+
+
 }
 
 void SocketManager::onDataRead() {
     QByteArray data = mySocket->readAll();
+    QJsonDocument doc = QJsonDocument::fromJson(data);
+    QJsonObject mainobj = doc.object();
+    auto payload = mainobj["payload"].toObject();
     emit dataReceived(data);
     response = data;
+    QMessageBox::warning(nullptr,"data",data);
+
     qDebug() << "Data read:" << data;
 }
 
