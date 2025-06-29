@@ -102,6 +102,7 @@ void ClientHandler::processMessage(const QJsonObject& message)
 /// \brief ClientHandler::handleLogin
 /// \param payload
 /// with this function we cas access to login undirectly and its better because help us more
+
 void ClientHandler::handleLogin(const QJsonObject& payload)
 {
     QString username = payload["username"].toString();
@@ -115,26 +116,40 @@ void ClientHandler::handleLogin(const QJsonObject& payload)
 
     switch (result) {
     case UserManager::Login_Success:
-        response["response"] = "auth_success";
-        this->m_player = loggedInPlayer; // set player logged in
-        this->m_player->setHandler(this); // set handler fo loggedin player
+        this->m_player = loggedInPlayer;
+        this->m_player->setHandler(this);
         qDebug() << "Player" << m_player->getUsername() << "authenticated and linked to handler.";
+
+        // checking reconnection
+        { // for use domain variable
+            GameSession* pausedSession = GameManager::instance()->findPausedGameForPlayer(m_player);
+            if (pausedSession) {
+                // player has a game
+                qDebug() << "Found a paused game for" << m_player->getUsername() << ". Reconnecting...";
+                this->m_gameSession = pausedSession;
+                pausedSession->reconnectPlayer(m_player);
+            } else {
+                // formal login
+                response["response"] = "auth_success";
+                sendJson(response);
+            }
+        }
         break;
 
     case UserManager::User_NotFound:
         response["response"] = "auth_error";
         responsePayload["message"] = "User not found.";
         response["payload"] = responsePayload;
+        sendJson(response);
         break;
 
     case UserManager::Wrong_Password:
         response["response"] = "auth_error";
         responsePayload["message"] = "Incorrect password.";
         response["payload"] = responsePayload;
+        sendJson(response);
         break;
     }
-
-    sendJson(response);
 }
 //////////////////////////////////////////////////////////////////////////
 /// \brief ClientHandler::handleSignup
@@ -209,7 +224,7 @@ void ClientHandler::handleSelectCard(const QJsonObject& payload)
         return;
     }
 
-    // ۱. کارت انتخاب شده را از payload استخراج می‌کنیم
+    //extract payload
     if (!payload.contains("selected_card")) {
         qWarning() << "select_card command received with no card data.";
         return;
@@ -219,7 +234,6 @@ void ClientHandler::handleSelectCard(const QJsonObject& payload)
 
     qDebug() << "Player" << m_player->getUsername() << "selected card with Rank:" << selectedCard.getRank() << "Suit:" << selectedCard.getSuit();
 
-    // ۲. و آن را به GameSession برای پردازش می‌دهیم
     m_gameSession->playerSelectedCard(m_player, selectedCard);
 }
 //////////////////////////////////////////////////////////////////////////

@@ -2,6 +2,7 @@
 #include "gamesession.h"
 #include "player.h"
 #include "clienthandler.h"
+#include <QTimer>
 #include <QDebug>
 /////////////////////////////////////////////////////////////////////////
 GameManager* GameManager::instance()
@@ -40,6 +41,8 @@ void GameManager::createNewGame(Player* player1, Player* player2)
     GameSession* newSession = new GameSession(player1, player2);
     m_active_games.append(newSession);
 
+    connect(newSession, &GameSession::gameFinished, this, &GameManager::onGameFinished);
+
     // notifying player for start game
     player1->getHandler()->startGame(newSession);
     player2->getHandler()->startGame(newSession);
@@ -47,3 +50,38 @@ void GameManager::createNewGame(Player* player1, Player* player2)
     newSession->startNewRound();
 }
 /////////////////////////////////////////////////////////////////////////
+void GameManager::gameSessionPaused(GameSession* session)
+{
+    // add game to paused games
+    if (m_active_games.removeOne(session)) {
+        m_paused_games.append(session);
+    }
+}
+/////////////////////////////////////////////////////////////////////////
+GameSession* GameManager::findPausedGameForPlayer(Player* player)
+{
+    // add game to active games
+    for (GameSession* session : m_paused_games) {
+        if (session->isPlayerInSession(player)) {
+            m_paused_games.removeOne(session);
+            m_active_games.append(session);
+            return session;
+        }
+    }
+    return nullptr;
+}
+/////////////////////////////////////////////////////////////////////////
+bool GameSession::isPlayerInSession(Player* player)
+{
+    return (player == m_player1 || player == m_player2);
+}
+/////////////////////////////////////////////////////////////////////////
+void GameManager::onGameFinished(GameSession* session)
+{
+    qDebug() << "A game session has finished. Cleaning up...";
+    m_active_games.removeOne(session); //delete from active list game
+    session->deleteLater(); // delete obj safety
+}
+/////////////////////////////////////////////////////////////////////////
+
+

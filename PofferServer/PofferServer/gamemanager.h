@@ -17,6 +17,7 @@ private:
 
     QList<Player*> m_waiting_lobby;
     QList<GameSession*> m_active_games;
+    QList<GameSession*> m_paused_games;
 
 public:
     explicit GameManager(QObject *parent = nullptr);
@@ -26,7 +27,12 @@ public:
 
     void playerWantsToPlay(Player* player);
 
-;
+    void gameSessionPaused(GameSession* session);
+    GameSession* findPausedGameForPlayer(Player* player);
+
+public slots:
+    void onGameFinished(GameSession* session);
+
 };
 
 #endif // GAMEMANAGER_H

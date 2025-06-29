@@ -5,6 +5,7 @@
 #include <QMap>
 #include <QList>
 #include <algorithm>
+#include <QTimer>
 
 // check this file again after complete another classes ::::: remembre mohamad !!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -14,6 +15,11 @@ GameSession::GameSession(Player* player1, Player* player2, QObject *parent)
     m_player1_score(0) , m_player2_score(0)
 {
     qDebug() << "GameSession created bitween" << player1->getUsername() << "and" << player2->getUsername();
+
+    // create timer
+    m_disconnectTimer = new QTimer(this);
+    m_disconnectTimer->setSingleShot(true); // timer use just one time
+    connect(m_disconnectTimer, &QTimer::timeout, this, &GameSession::onDisconnectTimerTimeout);
 }
 //////////////////////////////////////////////////////////////////////////////////////////
 void GameSession::startNewRound()
@@ -390,3 +396,94 @@ Player* GameSession::breakTie(const Hand& hand1, const Hand& hand2, HandEvaluato
 
     return nullptr; // this part never happend
 }
+
+//////////////////////////////////////////////////////////////////////////////////////////
+void GameSession::playerDisconnected(Player* disconnectedPlayer)
+{
+    // if a player disconneced befor
+    if (m_disconnectedPlayer) return;
+
+    qDebug() << "GameSession notified that" << disconnectedPlayer->getUsername() << "has disconnected. Starting 60s timer...";
+    m_disconnectedPlayer = disconnectedPlayer;
+    m_disconnectTimer->start(60000);
+    GameManager::instance()->gameSessionPaused(this);
+
+    //sending notify to other player
+    Player* remainingPlayer = (disconnectedPlayer == m_player1) ? m_player2 : m_player1;
+    if (remainingPlayer && remainingPlayer->getHandler()) {
+        QJsonObject payload;
+        payload["wait_time"] = 60;
+
+        QJsonObject response;
+        response["response"] = "opponent_disconnected";
+        response["payload"] = payload;
+
+        remainingPlayer->getHandler()->sendJson(response);
+    }
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////
+void GameSession::onDisconnectTimerTimeout()
+{
+    qDebug() << "Disconnect timer for" << m_disconnectedPlayer->getUsername() << "timed out.";
+
+    // disconnected player exist ..
+    if (m_disconnectedPlayer) {
+        // othre player is winner
+        Player* winner = (m_disconnectedPlayer == m_player1) ? m_player2 : m_player1;
+        endGame(winner, "Opponent failed to reconnect in time.");
+    }
+}
+//////////////////////////////////////////////////////////////////////////////////////////
+void GameSession::reconnectPlayer(Player* player)
+{
+    if (player == m_disconnectedPlayer) {
+        qDebug() << "Player" << player->getUsername() << "reconnected successfully!";
+        m_disconnectedPlayer = nullptr;
+        m_disconnectTimer->stop();
+
+        QJsonObject response;
+        response["response"] = "game_resumed";
+
+        if (m_player1->getHandler()) m_player1->getHandler()->sendJson(response);
+        if (m_player2->getHandler()) m_player2->getHandler()->sendJson(response);
+    }
+}
+//////////////////////////////////////////////////////////////////////////////////////////
+void GameSession::endGame(Player* winner, const QString& reason)
+{
+    qDebug() << "Game is ending. Winner:" << (winner ? winner->getUsername() : "None (Draw)") << "Reason:" << reason;
+
+    // find loser
+    Player* loser = nullptr;
+    if (winner) {
+        loser = (winner == m_player1) ? m_player2 : m_player1;
+    }
+
+    // create message for winner
+    if (winner && winner->getHandler()) {
+        QJsonObject payload_win;
+        payload_win["result"] = "You Won!";
+        payload_win["reason"] = reason;
+
+        QJsonObject response_win;
+        response_win["response"] = "game_over";
+        response_win["payload"] = payload_win;
+        winner->getHandler()->sendJson(response_win);
+    }
+    // create message for loser
+    if (loser && loser->getHandler()) {
+        QJsonObject payload_lose;
+        payload_lose["result"] = "You Lost!";
+        payload_lose["reason"] = reason;
+
+        QJsonObject response_lose;
+        response_lose["response"] = "game_over";
+        response_lose["payload"] = payload_lose;
+        loser->getHandler()->sendJson(response_lose);
+    }
+
+    // finished game
+    emit gameFinished(this);
+}
+//////////////////////////////////////////////////////////////////////////////////////////
