@@ -131,7 +131,7 @@ void GameSession::playerSelectedCard(Player* player, const Card& selectedCard)
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////
-void GameSession::evaluateAndFinishRound()
+/*oid GameSession::evaluateAndFinishRound()
 {
       Player* winner = nullptr;
     // calculate winner
@@ -171,19 +171,68 @@ void GameSession::evaluateAndFinishRound()
         // شروع راند بعدی
         startNewRound();
     }
+}*/
+
+///////////////////////////**********///////////////////////////////
+Player* GameSession::evaluateAndFinishRound(){
+    Player* winner = nullptr;
+    // calculate winner
+    // evaluateHand is a member fucntion in handEvaluator class
+    HandEvaluator::HandRank rank1 = m_evaluator.evaluateHand(m_player1_hand);
+    HandEvaluator::HandRank rank2 = m_evaluator.evaluateHand(m_player2_hand);
+
+    // who is winner ?
+    // if ranks is equal then check exception
+    if (rank1 > rank2) {
+        winner = m_player1;
+    } else if (rank2 > rank1) {
+        winner = m_player2;
+    } else {
+        // if 2 hand is equal most be break and determine a winner
+        winner = breakTie(m_player1_hand, m_player2_hand, rank1);
+    }
+
+    if (winner == m_player1) {
+        m_player1_score++;
+        qDebug() << m_player1->getUsername() << "wins the round!";
+    } else if (winner == m_player2) {
+        m_player2_score++;
+        qDebug() << m_player2->getUsername() << "wins the round!";
+    } else {
+        qDebug() << "The round is a draw!";
+    }
+
+    // TODO: یک پیام "round_result" به هر دو کلاینت بفرست
+    // این پیام باید شامل نتیجه، امتیازات جدید و دست حریف باشد
+
+    // چک کردن پایان بازی
+    if (m_player1_score >= 2 || m_player2_score >= 2) {
+        qDebug() << "Game Over!";
+        // TODO: پیام "game_over" را به هر دو کلاینت بفرست
+    } else {
+        // شروع راند بعدی
+        startNewRound();
+    }
+
+    return winner;
 }
 
 
 //////////////////////////////////////////////////////////////////////////////////////////
 // helped function
+// this funnction help us to determine pairs with return a map that carry Rank card and count it in a hand
 QMap<Card::Rank, int> getRankCounts(const Hand& hand) {
+    // make map
     QMap<Card::Rank, int> counts;
+    // traversal map
     for (const Card& card : hand.getCards()) {
+        // find or make key and add 1 to value
         counts[card.getRank()]++;
     }
     return counts;
 }
 
+// find rank with its count in map ( value : n )
 Card::Rank findNOfAKindRank(int n, const QMap<Card::Rank, int>& counts) {
     for(auto it = counts.constBegin(); it != counts.constEnd(); ++it) {
         if (it.value() == n) {
@@ -192,6 +241,22 @@ Card::Rank findNOfAKindRank(int n, const QMap<Card::Rank, int>& counts) {
     }
     return Card::TWO; // هرگز نباید به اینجا برسد
 }
+
+// this function compare list kicker and find player winner
+Player* compareKickers(Player* p1, Player* p2, QList<Card::Rank> kickers1, QList<Card::Rank> kickers2)
+{
+    // sorting
+    std::sort(kickers1.begin(), kickers1.end(), std::greater<Card::Rank>());
+    std::sort(kickers2.begin(), kickers2.end(), std::greater<Card::Rank>());
+
+    for (int i = 0; i < kickers1.size(); ++i) {
+        if (kickers1[i] > kickers2[i]) return p1;
+        if (kickers2[i] > kickers1[i]) return p2;
+    }
+
+    return nullptr; // this part never happend
+}
+
 //////////////////////////////////////////////////////////////////////////////////////////
 /// \brief GameSession::breakTie
 /// \param hand1
@@ -202,6 +267,10 @@ Card::Rank findNOfAKindRank(int n, const QMap<Card::Rank, int>& counts) {
 Player* GameSession::breakTie(const Hand& hand1, const Hand& hand2, HandEvaluator::HandRank rank)
 {
     qDebug() << "Breaking a tie for rank:" << rank;
+
+    // in this part make 2 map to find pairs in map
+    auto counts1 = getRankCounts(hand1);
+    auto counts2 = getRankCounts(hand2);
 
     switch (rank) {
         case HandEvaluator::GOLDEN_HAND: {
@@ -227,6 +296,7 @@ Player* GameSession::breakTie(const Hand& hand1, const Hand& hand2, HandEvaluato
             auto counts2 = getRankCounts(hand2);
             int n = (rank == HandEvaluator::FOUR_OF_A_KIND) ? 4 : 3;
 
+            // find rank
             Card::Rank rank1_primary = findNOfAKindRank(n, counts1);
             Card::Rank rank2_primary = findNOfAKindRank(n, counts2);
 
@@ -236,11 +306,54 @@ Player* GameSession::breakTie(const Hand& hand1, const Hand& hand2, HandEvaluato
         }
 
         // base on pair cards if doesn;t work base on other cards
-        case HandEvaluator::DOUBLE_PAIR:
-        case HandEvaluator::SINGLE_PAIR: {
+        case HandEvaluator::DOUBLE_PAIR: {
+            // مرحله ب: حالا که نقشه شمارش را داریم، در آن می‌گردیم
+            QList<Card::Rank> pairs1, pairs2;
+            Card::Rank kicker1 = Card::TWO, kicker2 = Card::TWO;
 
+            // find ranks for pair and kicker
+            for(auto it = counts1.constBegin(); it != counts1.constEnd(); ++it) {
+                if(it.value() == 2) pairs1.append(it.key());
+                else if(it.value() == 1) kicker1 = it.key();
+            }
+            for(auto it = counts2.constBegin(); it != counts2.constEnd(); ++it) {
+                if(it.value() == 2) pairs2.append(it.key());
+                else if(it.value() == 1) kicker2 = it.key();
+            }
+
+            std::sort(pairs1.begin(), pairs1.end(), std::greater<Card::Rank>());
+            std::sort(pairs2.begin(), pairs2.end(), std::greater<Card::Rank>());
+
+            // checking biger than
+            // big pair
+            if (pairs1[0] > pairs2[0]) return m_player1;
+            if (pairs2[0] > pairs1[0]) return m_player2;
+            // sec piar
+            if (pairs1[1] > pairs2[1]) return m_player1;
+            if (pairs2[1] > pairs1[1]) return m_player2;
+            // kicker
+            if (kicker1 > kicker2) return m_player1;
+            if (kicker2 > kicker1) return m_player2;
 
             break;
+        }
+
+        case HandEvaluator::SINGLE_PAIR: {
+            Card::Rank pairRank1 = Card::TWO, pairRank2 = Card::TWO;
+            QList<Card::Rank> kickers1, kickers2;
+
+            for(auto it = counts1.constBegin(); it != counts1.constEnd(); ++it) {
+                if(it.value() == 2) pairRank1 = it.key(); else kickers1.append(it.key());
+            }
+            for(auto it = counts2.constBegin(); it != counts2.constEnd(); ++it) {
+                if(it.value() == 2) pairRank2 = it.key(); else kickers2.append(it.key());
+            }
+
+            // compare pairs
+            if (pairRank1 > pairRank2) return m_player1;
+            if (pairRank2 > pairRank1) return m_player2;
+            // compare kicker with helped function
+            return compareKickers(m_player1, m_player2, kickers1, kickers2);
         }
 
         case HandEvaluator::MSC_HAND:
@@ -259,12 +372,12 @@ Player* GameSession::breakTie(const Hand& hand1, const Hand& hand2, HandEvaluato
              }
              // compare suit
              if (sortedCards1[0].getSuit() > sortedCards2[0].getSuit()) return m_player1;
-             else return m_player2;
+             if (sortedCards2[0].getSuit() > sortedCards1[0].getSuit()) return m_player2;
              break;
         }
         default :
             return nullptr;
     }
 
-    return nullptr; // اگر بعد از همه مقایسه‌ها باز هم مساوی بود، راند مساوی است
+    return nullptr; // this part never happend
 }

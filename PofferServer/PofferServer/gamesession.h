@@ -26,7 +26,8 @@ class GameSession : public QObject
 private:
     void startDraftingPhase(); // start sharing cards
     void sendDraftPoolToCurrentPlayer(); // give 7 card to current palyer
-    void evaluateAndFinishRound(); // caculate winner
+
+
     Player* breakTie(const Hand& hand1, const Hand& hand2, HandEvaluator::HandRank rank); // if 2 hand is equal chek it in herre
 
     Player* m_player1; // first player
@@ -50,9 +51,20 @@ public:
 
     void startNewRound();
 
-    // این تابع توسط ClientHandler صدا زده می‌شود وقتی پیامی از بازیکن می‌رسد
+    // void evaluateAndFinishRound(); // caculate winner
+    Player* evaluateAndFinishRound();
+
+    // this function clalled by client hanlder while player select a card
     void playerSelectedCard(Player* player, const Card& selectedCard);
 
+    // this functions help us to test logic server
+    void setPlayer1Hand(const Hand& hand) {
+        m_player1_hand = hand;
+    }
+
+    void setPlayer2Hand(const Hand& hand) {
+        m_player2_hand = hand;
+    }
 
 };
 

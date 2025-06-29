@@ -159,7 +159,7 @@ void ClientHandler::handleSignup(const QJsonObject& payload)
 /// \brief ClientHandler::handleRequestGame
 /// \param payload
 
-void ClientHandler::handleRequestGame(const QJsonObject& payload)
+void ClientHandler::handleRequestGame(const QJsonObject& /*payload*/)
 {
     // if a player already play a game or doesn't exist
     if (!m_player || m_gameSession) {
