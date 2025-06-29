@@ -14,14 +14,14 @@ Poffer::Poffer(SocketManager* socket, QString username, QWidget *parent) :
     ui(new Ui::Poffer),
     client_socket(socket), // دریافت و نگه‌داری
     username(username),
-    round{0}
+    round{1}
 {
     ui->setupUi(this);    
     this->setFixedSize(1300, 750);
-    show_myhand();
     get_card();
-    connect(this, &Poffer::turn_showed, this, &Poffer::on_turn_showed);
+    connect(this, &Poffer::turn_showed, this, &Poffer::get_list_card_of_turn);
     connect(this, &Poffer::card_recived, this, &Poffer::choose_Card);
+    show_myhand();
     start_round();
 
 
@@ -35,7 +35,6 @@ void Poffer::paintEvent(QPaintEvent *event)
     painter.drawPixmap(this->rect(), pixmap);
     QWidget::paintEvent(event);
 }
-
 void Poffer::delayWithEventLoop(int second , QLabel* p_lable , QLabel* o_lable){
     QEventLoop loop;
     QTimer::singleShot(second, &loop, &QEventLoop::quit);
@@ -45,32 +44,84 @@ void Poffer::delayWithEventLoop(int second , QLabel* p_lable , QLabel* o_lable){
 }
 
 void Poffer::start_round(){
-    QString starter;
-    Card player_startcard;
-    Card opp_startcard;
-    choose_turn(starter,player_startcard,opp_startcard);
-    show_turn(player_startcard,opp_startcard);
-    //given_card = get_list_card_of_turn(starter,turn);
-    //choose_Card(given_card , starter , turn);
+    if(round==2){
+        QString starter;
+        Card player_startcard;
+        Card opp_startcard;
+        choose_turn(starter,player_startcard,opp_startcard);
+        show_turn(player_startcard,opp_startcard);
+    }
+    else{
+        QByteArray t;
+        get_list_card_of_turn();
+    }
+}
+void Poffer::handle_received_cards(QByteArray data) {
+    if (waiting_label) {
+        waiting_label->hide();
+        waiting_label->deleteLater();
+        waiting_label = nullptr;
+    }
+
+    QByteArray test_json = R"(
+{
+  "response": "cards_given",
+  "payload": {
+    "starter_username": "mohammad99",
+    "cards": [
+      { "suit": "DIAMOND", "rank": "KING" },
+      { "suit": "GOLD", "rank": "TEN" },
+      { "suit": "COIN", "rank": "TEN" },
+      { "suit": "DOLLAR", "rank": "BITCOIN" },
+      { "suit": "DIAMOND", "rank": "FIVE" },
+      { "suit": "COIN", "rank": "SOLDIER" },
+      { "suit": "GOLD", "rank": "QUEEN" }
+    ]
+  }
+}
+)";
+    QJsonDocument doc = QJsonDocument::fromJson(test_json);
+    if (doc.isNull()) {
+        QMessageBox::warning(this, "خطا", "داده از سرور خراب است.");
+        return;
+    }
+
+    QJsonObject obj = doc.object();
 
 
-   /* connect(this,&Poffer::turn_showed,this,[=,&given_card]() mutable {
-        qDebug()<<"hhhh";
-       given_card = get_list_card_of_turn(starter,turn);
-        qDebug()<<given_card[1].rank;
-       choose_Card(given_card , starter , turn);
-    });
-    show_turn(player_startcard,opp_startcard);
-*/
-   // qDebug()<<given_card[1].suit;
+    QVector<Card> cards;
+    QJsonArray card_array = obj["payload"].toObject()["cards"].toArray();
+    for (auto val : card_array) {
+        auto c = val.toObject();
+        QString suit = c["suit"].toString();
+        QString rank = c["rank"].toString();
+        auto t = find_card(rank,suit);
+        qDebug()<<t.rank;
+        cards.push_back(find_card(rank, suit));
+    }
+
+    emit card_recived(cards, username, true);
+}
+void Poffer::request_card(){
+
+
+
+
+    connect(client_socket , &SocketManager::dataReceived , this , &Poffer::on_turn_showed);
+    QJsonObject payload;
+    QJsonObject mainobject;
+    mainobject["command"] = "request_card";
+    payload["username"] = username;
+    mainobject["payload"] = payload;
+    QVector<Card> c;
+    QJsonDocument doc(mainobject);
+    auto json_to_send = doc.toJson(QJsonDocument::Compact);
+    client_socket->sendData(json_to_send);
 }
 
-
 void Poffer::on_turn_showed(){
-
     QVector<Card> given_card;
-    bool turn;
-    given_card = get_list_card_of_turn(username , turn);
+    bool turn = true;
     emit card_recived(given_card , username , turn);
 }
 
@@ -104,10 +155,6 @@ void Poffer::show_myhand(){
 }
 
 
-
-
-
-
 void Poffer::animation(QPoint final_pos , QPushButton* button){
     QTimer* timer = new QTimer();
     connect(timer,&QTimer::timeout,this,[=](){
@@ -123,9 +170,6 @@ void Poffer::animation(QPoint final_pos , QPushButton* button){
     timer->start(20);
 
 }
-
-
-
 
 
 void Poffer::choose_Card(QVector<Card> c, QString starter, bool a) {
@@ -537,9 +581,6 @@ void Poffer::choose_turn(QString& starter, Card& player_startcard, Card& opp_sta
 
 
 
-
-
-
 Card Poffer::find_card(QString rank , QString suit){
     for(auto a:deck){
         if(a.rank==rank&&suit==a.suit){
@@ -551,113 +592,28 @@ Card Poffer::find_card(QString rank , QString suit){
 
 
 
-
-
-
-
-
-QVector<Card> Poffer::get_list_card_of_turn( QString starter , bool turn){
+void Poffer::get_list_card_of_turn() {
     QJsonObject payload;
+    payload["username"] = username;
     QJsonObject mainobject;
     mainobject["command"] = "request_card";
     mainobject["payload"] = payload;
-    payload["username"] = username;
-    QVector<Card> c;
+
     QJsonDocument doc(mainobject);
-    auto json_to_send = doc.toJson(QJsonDocument::Compact);
-    client_socket->sendData(json_to_send);
+    client_socket->sendData(doc.toJson(QJsonDocument::Compact));
 
-
-    QMetaObject::Connection conn;
-    QEventLoop loop;
-    QLabel* lable = new QLabel(this);
-    lable->setText("waiting......");
-    lable->setAlignment(Qt::AlignCenter);  // اضافه برای وسط‌چین کردن متن
-    lable->setStyleSheet(R"(
-QLabel {
-    background-color: qlineargradient(
-        x1:0, y1:0, x2:1, y2:1,
-        stop:0 #6a11cb, stop:1 #2575fc
-    );
-    color: white;
-    font: 16pt "Segoe UI";
-    padding: 10px 20px;
-    border-radius: 12px;
-    border: 2px solid #3b3b98;
-    /* text-align: center;  --> در Qt کاربردی ندارد */
-    /* سایه ملایم متن */
-}
-)");
-    lable->show();
-    QByteArray res_main;
-   /* conn = connect(client_socket , &SocketManager::dataReceived , this ,[&](){
-    res_main = client_socket->get_response();
-        lable->close();
-       loop.quit();
+    QLabel* label = new QLabel(this);
+    label->setText("waiting...........");
+    label->setAlignment(Qt::AlignCenter);
+    label->setStyleSheet("color: white; background-color: #444; font: 16pt;");
+    label->setGeometry(400, 350, 500, 50);
+    label->show();
+    waiting_label = label; // ذخیره برای بستن بعدا
+    QTimer::singleShot(1000, this, [=](){
+        QByteArray dummy;
+        handle_received_cards(dummy);
     });
-    loop.exec(); // منتظر دریافت پاسخ بمان
-*/
-    QTimer* timer = new QTimer();
-    connect(timer , &QTimer::timeout , this , [&](){
-        lable->close();
-        loop.quit();
-    });
-    timer->start(5000);
-     loop.exec();
-    timer->stop();
-    // گرفتن پاسخ
-   // auto res = client_socket->get_response();
-    QByteArray test_json = R"(
-{
-  "response": "cards_given",
-  "payload": {
-    "starter_username": "mohammad99",
-    "cards": [
-      { "suit": "DIAMOND", "rank": "KING" },
-      { "suit": "GOLD", "rank": "TEN" },
-      { "suit": "COIN", "rank": "TEN" },
-      { "suit": "DOLLAR", "rank": "BITCOIN" },
-      { "suit": "DIAMOND", "rank": "FIVE" },
-      { "suit": "COIN", "rank": "SOLDIER" },
-      { "suit": "GOLD", "rank": "QUEEN" }
-    ]
-  }
 }
-)";
-    auto res = test_json;
-    QJsonDocument doc_2 = QJsonDocument::fromJson(res);
-
-    QJsonObject mainobj = doc_2.object();
-
-    if (mainobj["response"].toString() != "cards_given") {
-        QMessageBox::warning(this, "warning", "Server could not respond");
-        return c;
-    }
-
-    QJsonObject payload_2 = mainobj["payload"].toObject();
-    QJsonArray cards_array = payload_2["cards"].toArray();
-
-    // ساخت کارت‌ها و اضافه به c
-    for (const auto &card_val : cards_array) {
-        QJsonObject card_obj = card_val.toObject();
-        QString suit = card_obj["suit"].toString();
-        QString rank = card_obj["rank"].toString();
-        c.push_back(find_card(rank, suit));
-    }
-
-    if(payload_2["starter_username"]==starter){
-        turn= true;
-    }
-    else{
-        turn = false;
-    }
-
-    return c;
-
-}
-
-
-
 
 
 
@@ -726,8 +682,6 @@ void Poffer::get_card(){
 
 
 }
-
-
 
 
 
