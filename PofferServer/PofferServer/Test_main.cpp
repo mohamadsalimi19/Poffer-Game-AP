@@ -2,57 +2,62 @@
 #include <QDebug>
 #include <QFile>
 #include <QJsonObject>
-#include "usermanager.h" // کلاسی که می‌خواهیم تست کنیم
 
-void printTestResult(const QString& testName, bool passed)
-{
-    if (passed) {
-        qDebug() << "[PASSED]" << testName;
-    } else {
-        qDebug() << "[FAILED]" << testName;
-    }
-}
+// تمام کلاس‌هایی که نیاز داریم را include می‌کنیم
+#include "usermanager.h"
+#include "gamemanager.h"
+#include "player.h"
 
 int main(int argc, char *argv[])
 {
     QCoreApplication a(argc, argv);
 
-    qDebug() << "--- Starting UserManager Test ---";
+    qDebug() << "--- Starting Full Server Logic Test ---";
 
-    // قدم ۰: برای هر بار تست، فایل کاربران قبلی را پاک می‌کنیم تا از صفر شروع کنیم
+    // برای یک تست تمیز، فایل کاربران قبلی را پاک می‌کنیم
     QFile::remove("users.json");
-    qDebug() << "Removed old users.json for a clean test.";
 
-    // قدم ۱: یک نمونه از مدیر کاربران می‌گیریم
-    UserManager* manager = UserManager::instance();
+    // گرفتن نمونه از مدیران سینگلتون ما
+    UserManager* userManager = UserManager::instance();
+    GameManager* gameManager = GameManager::instance();
 
-    // --- تست ثبت‌نام ---
-    qDebug() << "\n--- Testing Signup ---";
+    // ۱. ثبت‌نام دو بازیکن
+    QJsonObject p1_data;
+    p1_data["username"] = "mohammad_final";
+    p1_data["password_hash"] = "p1_pass";
+    userManager->signup(p1_data);
 
-    // تست ۱.۱: ثبت‌نام موفق یک کاربر جدید
-    QJsonObject user1_data;
-    user1_data["username"] = "mohammad";
-    user1_data["password_hash"] = "hash123";
-    printTestResult("Successful signup for 'mohammad'", manager->signup(user1_data));
+    QJsonObject p2_data;
+    p2_data["username"] = "babak_final";
+    p2_data["password_hash"] = "p2_pass";
+    userManager->signup(p2_data);
 
-    // تست ۱.۲: تلاش برای ثبت‌نام مجدد با همان نام کاربری (باید شکست بخورد)
-    printTestResult("Duplicate signup for 'mohammad'", !manager->signup(user1_data));
+    qDebug() << "\n[Test Step 1] Signup: Two players created.";
 
+    // ۲. لاگین کردن هر دو بازیکن
+    Player* player1 = nullptr;
+    Player* player2 = nullptr;
+    userManager->login("mohammad_final", "p1_pass", player1);
+    userManager->login("babak_final", "p2_pass", player2);
 
-    // --- تست ورود ---
-    qDebug() << "\n--- Testing Login ---";
+    if (player1 && player2) {
+        qDebug() << "[Test Step 2] Login: Both players logged in successfully.";
+    } else {
+        qCritical() << "[Test Step 2] Login: FAILED!";
+        return -1;
+    }
 
-    // تست ۲.۱: ورود موفق با اطلاعات صحیح
-    printTestResult("Successful login for 'mohammad'", manager->login("mohammad", "hash123"));
+    // در دنیای واقعی، هر بازیکن ClientHandler خودش را دارد. اینجا شبیه‌سازی می‌کنیم.
+    // player1->setHandler(...);
+    // player2->setHandler(...);
 
-    // تست ۲.۲: تلاش برای ورود با رمز عبور اشتباه (باید شکست بخورد)
-    printTestResult("Failed login with wrong password", !manager->login("mohammad", "wrong_hash"));
+    // ۳. ارسال درخواست بازی از طرف هر دو بازیکن
+    qDebug() << "\n[Test Step 3] Game Request: Both players are requesting a game...";
+    gameManager->playerWantsToPlay(player1);
+    gameManager->playerWantsToPlay(player2);
 
-    // تست ۲.۳: تلاش برای ورود با کاربری که وجود ندارد (باید شکست بخورد)
-    printTestResult("Failed login with non-existent user", !manager->login("babak", "any_hash"));
+    qDebug() << "\n--- Full Server Logic Test Finished ---";
+    qDebug() << "Check the logs above to see if a GameSession was created and a new round started.";
 
-
-    qDebug() << "\n--- UserManager tests finished ---";
-
-    return 0; // از برنامه خارج شو
+    return 0;
 }

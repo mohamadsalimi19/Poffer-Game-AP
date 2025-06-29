@@ -1,7 +1,8 @@
 #ifndef CARD_H
 #define CARD_H
 #include <QDebug>
-#include <iostream>
+#include <QJsonObject>
+#include <QVariant> // a library carry very data type and help us to convert enum to json file
 using namespace std;
 
 class Card_exception : public exception {
@@ -54,6 +55,10 @@ public:
     bool operator == (const Card & other) const { // for use remove one function
         return (suit == other.suit && rank == other.rank);
     }
+
+    // 2 function to convert json
+    QJsonObject toJson() const;
+    static Card fromJson(const QJsonObject& json);
 
 private:
     Suit suit;

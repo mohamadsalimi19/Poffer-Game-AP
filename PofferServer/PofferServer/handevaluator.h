@@ -35,7 +35,6 @@ public:
     HandRank evaluateHand(const Hand& hand);
 
 private:
-    // توابع کمکی که هر کدام یک الگو را بررسی می‌کنند
     bool isGoldenHand(const QVector<Card>& sortedCards);
     bool isOrderHand(const QVector<Card>& sortedCards);
     bool isFourOfAKind(const QVector<Card>& sortedCards);

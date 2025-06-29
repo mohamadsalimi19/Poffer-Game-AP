@@ -1,4 +1,4 @@
-QT = core
+QT = core network
 
 CONFIG += c++17 cmdline
 
@@ -8,12 +8,15 @@ CONFIG += c++17 cmdline
 
 SOURCES += \
         card.cpp \
+        clienthandler.cpp \
         deck.cpp \
+        gamemanager.cpp \
         gamesession.cpp \
         hand.cpp \
         handevaluator.cpp \
         main.cpp \
         player.cpp \
+        pofferserver.cpp \
         usermanager.cpp
 
 # Default rules for deployment.
@@ -23,9 +26,12 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 
 HEADERS += \
     card.h \
+    clienthandler.h \
     deck.h \
+    gamemanager.h \
     gamesession.h \
     hand.h \
     handevaluator.h \
     player.h \
+    pofferserver.h \
     usermanager.h
