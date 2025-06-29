@@ -26,6 +26,9 @@ public:
     void shuffle(); // shuffling cards
     Card deal();    // give one card to next player
 
+    // share diamond card for detemine fisrt player
+    Card dealDiamondCard();
+
 
 };
 

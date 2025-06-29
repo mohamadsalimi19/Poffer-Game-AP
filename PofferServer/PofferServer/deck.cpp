@@ -48,3 +48,18 @@ Card Deck::deal(){
         return Card(); // give a card for prevent crash program
     }
 }
+
+
+
+Card Deck::dealDiamondCard()
+{
+    // find diamond cards
+    for (int i = 0; i < m_cards.size(); ++i) {
+        if (m_cards[i].getSuit() == Card::DIAMOND) {
+
+            return m_cards.takeAt(i);
+        }
+    }
+   // if don't find ---> never happend this situation
+    return deal();
+}

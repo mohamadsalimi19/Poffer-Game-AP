@@ -1,0 +1,230 @@
+#include "clienthandler.h"
+#include "usermanager.h"
+#include "gamesession.h"
+#include "card.h"
+#include <QThread>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QDebug>
+
+//////////////////////////////////////////////////////////////////////////
+ClientHandler::ClientHandler(qintptr socketDescriptor, QObject *parent)
+    : QObject(parent),
+    m_socketDescriptor(socketDescriptor)
+{
+}
+
+//////////////////////////////////////////////////////////////////////////
+void ClientHandler::process()
+{
+    // started with neew player
+    qDebug() << "ClientHandler started in thread:" << QThread::currentThread();
+
+    //
+    m_socket = new QTcpSocket();
+    if (!m_socket->setSocketDescriptor(m_socketDescriptor)) {
+        qCritical() << "Could not set socket descriptor:" << m_socket->errorString(); // impotant error
+        delete m_socket; // free alocate d memory
+        emit finished(); // به ترد اصلی خبر می‌دهیم که کار ما تمام شد
+        return;
+    }
+
+    // ۲. سیگنال‌های سوکت را به اسلات‌های خودمان وصل می‌کنیم
+    connect(m_socket, &QTcpSocket::readyRead, this, &ClientHandler::onReadyRead);
+    connect(m_socket, &QTcpSocket::disconnected, this, &ClientHandler::onDisconnected);
+
+    qDebug() << "Client connected with descriptor:" << m_socketDescriptor;
+}
+//////////////////////////////////////////////////////////////////////////
+void ClientHandler::onReadyRead()
+{
+    // read all data in socker puffer (Qbyte)
+    QByteArray data = m_socket->readAll();
+    qDebug() << "Received from" << m_socketDescriptor << ":" << data;
+
+    // convert to json doc
+    QJsonDocument doc = QJsonDocument::fromJson(data);
+    if (doc.isNull() || !doc.isObject()) {
+        qWarning() << "Received invalid JSON from" << m_socketDescriptor;
+        return;
+    }
+
+    // read json and process it
+    processMessage(doc.object());
+}
+//////////////////////////////////////////////////////////////////////////
+void ClientHandler::onDisconnected()
+{
+    qDebug() << "Client disconnected:" << m_socketDescriptor;
+    m_socket->deleteLater(); // schadul for delete
+    emit finished(); // به ترد اصلی خبر می‌دهیم که کار ما تمام شد
+}
+//////////////////////////////////////////////////////////////////////////
+void ClientHandler::sendJson(const QJsonObject& json)
+{
+    // if socket == nullptr && isn't open[
+    if (m_socket && m_socket->isOpen()) {
+        // convet to byte array for send
+        QByteArray data = QJsonDocument(json).toJson(QJsonDocument::Compact);
+        m_socket->write(data);
+        qDebug() << "Sent to" << m_socketDescriptor << ":" << data;
+    }
+}
+
+//////////////////////////////////////////////////////////////////////////
+/// \brief ClientHandler::processMessage
+/// \param message
+/// void
+///
+void ClientHandler::processMessage(const QJsonObject& message)
+{
+    // exctract command
+    QString command = message["command"].toString();
+    if (command.isEmpty()) {
+        qWarning() << "Received message with no command.";
+        return;
+    }
+    // excratct payload
+    QJsonObject payload = message["payload"].toObject();
+
+    if (command == "login") {
+        handleLogin(payload);
+    } else if (command == "signup") {
+        handleSignup(payload);
+    } else if (command == "request_game") {
+        handleRequestGame(payload);
+    } else if (command == "select_card") {
+        handleSelectCard(payload);
+    }
+    // TODO: دستورات دیگر مثل انتخاب کارت و ... را هم اینجا اضافه کن
+}
+//////////////////////////////////////////////////////////////////////////
+/// \brief ClientHandler::handleLogin
+/// \param payload
+/// with this function we cas access to login undirectly and its better because help us more
+void ClientHandler::handleLogin(const QJsonObject& payload)
+{
+    QString username = payload["username"].toString();
+    QString passwordHash = payload["password_hash"].toString();
+
+    Player* loggedInPlayer = nullptr;
+    UserManager::LoginResult result = UserManager::instance()->login(username, passwordHash, loggedInPlayer);
+
+    QJsonObject response;
+    QJsonObject responsePayload;
+
+    switch (result) {
+    case UserManager::Login_Success:
+        response["response"] = "auth_success";
+        this->m_player = loggedInPlayer; // set player logged in
+        this->m_player->setHandler(this); // set handler fo loggedin player
+        qDebug() << "Player" << m_player->getUsername() << "authenticated and linked to handler.";
+        break;
+
+    case UserManager::User_NotFound:
+        response["response"] = "auth_error";
+        responsePayload["message"] = "User not found.";
+        response["payload"] = responsePayload;
+        break;
+
+    case UserManager::Wrong_Password:
+        response["response"] = "auth_error";
+        responsePayload["message"] = "Incorrect password.";
+        response["payload"] = responsePayload;
+        break;
+    }
+
+    sendJson(response);
+}
+//////////////////////////////////////////////////////////////////////////
+/// \brief ClientHandler::handleSignup
+/// \param payload
+///
+void ClientHandler::handleSignup(const QJsonObject& payload)
+{
+    // checking sign up
+    bool success = UserManager::instance()->signup(payload);
+
+    QJsonObject response;
+    if (success) {
+        response["response"] = "auth_success";
+    } else {
+        response["response"] = "auth_error";
+        response["payload"] = QJsonObject{{"message", "Username already exists."}};
+    }
+    sendJson(response);
+}
+
+//////////////////////////////////////////////////////////////////////////
+/// \brief ClientHandler::handleRequestGame
+/// \param payload
+
+void ClientHandler::handleRequestGame(const QJsonObject& payload)
+{
+    // if a player already play a game or doesn't exist
+    if (!m_player || m_gameSession) {
+        qWarning() << "Player" << (m_player ? m_player->getUsername() : "Unauthenticated")
+        << "sent a game request at an invalid time.";
+        // TODO: می‌توانی یک پیام خطا هم برای کلاینت بفرستی
+        return;
+    }
+
+    qDebug() << "Player" << m_player->getUsername() << "is requesting a game.";
+
+    GameManager::instance()->playerWantsToPlay(m_player);
+
+    QJsonObject response;
+    response["response"] = "waiting_for_opponent";
+    sendJson(response);
+}
+
+//////////////////////////////////////////////////////////////////////////
+/// \brief ClientHandler::startGame
+/// \param session
+// Notifying the client to start the game
+void ClientHandler::startGame(GameSession* session)
+{
+    if (!m_player) return; // dont do anything
+
+    m_gameSession = session; // set game session user
+
+    qDebug() << "Notifying player" << m_player->getUsername() << "that their game has started.";
+
+    // make a json pm for client
+    QJsonObject payload;
+    // TODO: در آینده باید اطلاعات حریف را هم اینجا اضافه کنیم
+    // payload["opponent_username"] = ...;
+
+    QJsonObject response;
+    response["response"] = "game_started";
+    response["payload"] = payload;
+
+    sendJson(response);
+}
+//////////////////////////////////////////////////////////////////////////
+void ClientHandler::handleSelectCard(const QJsonObject& payload)
+{
+    if (!m_gameSession) {
+        qWarning() << "Player sent select_card command but is not in a game.";
+        return;
+    }
+
+    // ۱. کارت انتخاب شده را از payload استخراج می‌کنیم
+    if (!payload.contains("selected_card")) {
+        qWarning() << "select_card command received with no card data.";
+        return;
+    }
+    QJsonObject cardObj = payload["selected_card"].toObject();
+    Card selectedCard = Card::fromJson(cardObj);
+
+    qDebug() << "Player" << m_player->getUsername() << "selected card with Rank:" << selectedCard.getRank() << "Suit:" << selectedCard.getSuit();
+
+    // ۲. و آن را به GameSession برای پردازش می‌دهیم
+    m_gameSession->playerSelectedCard(m_player, selectedCard);
+}
+//////////////////////////////////////////////////////////////////////////
+ClientHandler::~ClientHandler()
+{
+    qDebug() << "ClientHandler for socket" << m_socketDescriptor << "is being destroyed.";
+}
+//////////////////////////////////////////////////////////////////////////

@@ -4,11 +4,15 @@
 #include <QString>
 #include <QJsonObject>
 
+class ClientHandler;
+
 class Player {
 private:
     QString m_username;
     QString m_passwordHash;
-    // می‌توانید اطلاعات دیگر مثل امتیاز و... را هم اینجا اضافه کنید
+    // every player has a handler that help it to communicate with core game
+    ClientHandler* m_handler = nullptr;
+
 
 public:
     Player(const QString& username, const QString& passwordHash);
@@ -16,6 +20,10 @@ public:
     QString getUsername() const;
     QString getPasswordHash() const;
     QJsonObject toJson() const;
+
+    void setHandler(ClientHandler* handler);
+    ClientHandler* getHandler() const;
+
 
 };
 

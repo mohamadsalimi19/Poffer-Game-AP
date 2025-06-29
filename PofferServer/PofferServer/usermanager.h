@@ -23,6 +23,13 @@ private:
     QMap<QString, Player*> m_users;
 
 public:
+
+    enum LoginResult {
+        Login_Success,
+        User_NotFound,
+        Wrong_Password
+    };
+
     // explicit beacuase dont make with default
     explicit UserManager(QObject *parent = nullptr);
 
@@ -31,8 +38,8 @@ public:
     // static function becuase just need a one object no more than
     static UserManager* instance();
 
-    // login function --> yes or no
-    bool login(const QString& username, const QString& passwordHash);
+    // login function --> yes or no  ::: updated -- > return more detail
+    LoginResult login(const QString& username, const QString& passwordHash, Player*& outPlayer);
 
     // sign up a new playre
     bool signup(const QJsonObject& userData);

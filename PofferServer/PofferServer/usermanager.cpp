@@ -61,14 +61,27 @@ void UserManager::saveUsers()
     file.close();
 }
 ///////////////////////////////////////////////////////////////////
-bool UserManager::login(const QString& username, const QString& passwordHash)
+/// \brief UserManager::login
+/// \param username
+/// \param passwordHash
+/// \param outPlayer
+/// \return
+/// send out player as call by refrence
+UserManager::LoginResult UserManager::login(const QString& username, const QString& passwordHash, Player*& outPlayer)
 {
+    outPlayer = nullptr; // reset outplayer
+
     if (!m_users.contains(username)) {
-        return false; // کاربر وجود ندارد
+        return User_NotFound; // user doesnt exist
     }
 
-    // چک می‌کنیم آیا هش پسورد مطابقت دارد
-    return m_users.value(username)->getPasswordHash() == passwordHash;
+    Player* player = m_users.value(username);
+    if (player->getPasswordHash() == passwordHash) {
+        outPlayer = player;
+        return Login_Success;
+    } else {
+        return Wrong_Password;
+    }
 }
 ///////////////////////////////////////////////////////////////////
 bool UserManager::signup(const QJsonObject& userData)
@@ -91,10 +104,7 @@ bool UserManager::signup(const QJsonObject& userData)
 ///////////////////////////////////////////////////////////////////
 UserManager::~UserManager()
 {
-    // qDeleteAll یک تابع کمکی در Qt است که روی تمام اعضای یک مجموعه
-    // (مثل مقادیر QMap ما) حرکت کرده و آنها را delete می‌کند.
-    // این کار از نشت حافظه جلوگیری می‌کند.
     qDeleteAll(m_users);
-    m_users.clear(); // مپ را هم خالی می‌کنیم
+    m_users.clear();
     qDebug() << "UserManager destroyed and all players cleaned up.";
 }

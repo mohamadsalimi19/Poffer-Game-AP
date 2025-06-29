@@ -5,7 +5,7 @@ Player::Player(const QString& username, const QString& passwordHash)
     : m_username(username),
     m_passwordHash(passwordHash)
 {
-    // بدنه سازنده خالی است چون تمام کار در Initializer List انجام شد
+
 }
 
 /////////////////////////////////////////////////////////////////////
@@ -32,3 +32,13 @@ QJsonObject Player::toJson() const
 
     return playerJson;
 }
+
+/////////////////////////////////////////////////////////////////////
+void Player::setHandler(ClientHandler* handler) {
+    m_handler = handler;
+}
+/////////////////////////////////////////////////////////////////////
+ClientHandler* Player::getHandler() const {
+    return m_handler;
+}
+/////////////////////////////////////////////////////////////////////

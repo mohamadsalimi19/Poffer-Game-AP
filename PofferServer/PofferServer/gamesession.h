@@ -5,7 +5,8 @@
 #include "hand.h"
 #include "handevaluator.h"
 #include "player.h"
-
+#include <QJsonObject>
+#include <QJsonArray>
 #include <QObject>
 
 using namespace std ;
