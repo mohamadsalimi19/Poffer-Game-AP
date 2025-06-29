@@ -28,6 +28,7 @@ void SocketManager::sendData(const QByteArray &data) {
 
 void SocketManager::onDataRead() {
     QByteArray data = mySocket->readAll();
+    emit dataReceived(data);
     response = data;
     qDebug() << "Data read:" << data;
 }

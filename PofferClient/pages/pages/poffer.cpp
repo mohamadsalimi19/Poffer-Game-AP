@@ -7,22 +7,26 @@
 #include"QLabel"
 #include<QJsonArray>
 #include<QPushButton>
+#include<QEventLoop>
+#include"QMetaObject"
 Poffer::Poffer(SocketManager* socket, QString username, QWidget *parent) :
     QWidget(parent),
     ui(new Ui::Poffer),
     client_socket(socket), // دریافت و نگه‌داری
-    username(username)
+    username(username),
+    round{0}
 {
     ui->setupUi(this);    
     this->setFixedSize(1300, 750);
+    show_myhand();
     get_card();
-
-
-
+    connect(this, &Poffer::turn_showed, this, &Poffer::on_turn_showed);
+    connect(this, &Poffer::card_recived, this, &Poffer::choose_Card);
     start_round();
 
 
 }
+bool finish_turn = false;
 
 void Poffer::paintEvent(QPaintEvent *event)
 {
@@ -32,23 +36,93 @@ void Poffer::paintEvent(QPaintEvent *event)
     QWidget::paintEvent(event);
 }
 
+void Poffer::delayWithEventLoop(int second , QLabel* p_lable , QLabel* o_lable){
+    QEventLoop loop;
+    QTimer::singleShot(second, &loop, &QEventLoop::quit);
+    p_lable->hide();
+    o_lable->hide();
+    loop.exec();
+}
 
 void Poffer::start_round(){
-    bool turn = false;
     QString starter;
     Card player_startcard;
     Card opp_startcard;
-    QVector<Card> given_card;
-    Card choosen_card;
     choose_turn(starter,player_startcard,opp_startcard);
-  //  show_turn(player_startcard,opp_startcard);
-    given_card = get_list_card_of_turn(given_card,starter,turn);
-    qDebug()<<given_card[1].suit;
-    choose_Card(given_card , starter , turn);
+    show_turn(player_startcard,opp_startcard);
+    //given_card = get_list_card_of_turn(starter,turn);
+    //choose_Card(given_card , starter , turn);
 
 
+   /* connect(this,&Poffer::turn_showed,this,[=,&given_card]() mutable {
+        qDebug()<<"hhhh";
+       given_card = get_list_card_of_turn(starter,turn);
+        qDebug()<<given_card[1].rank;
+       choose_Card(given_card , starter , turn);
+    });
+    show_turn(player_startcard,opp_startcard);
+*/
+   // qDebug()<<given_card[1].suit;
 }
 
+
+void Poffer::on_turn_showed(){
+
+    QVector<Card> given_card;
+    bool turn;
+    given_card = get_list_card_of_turn(username , turn);
+    emit card_recived(given_card , username , turn);
+}
+
+void Poffer::show_myhand(){
+    int cardWidth = 130;
+    int cardHeight = 180;
+    int spacing = 20;
+    int totalWidth = 5 * cardWidth + 4 * spacing;
+    int startX = (1200 - totalWidth) / 2;
+
+    int playerY = 550;
+    int opponentY = 20;
+
+    for (int i = 0; i < 5; ++i) {
+        QPushButton* btn = new QPushButton(this);
+        int x = startX + i * (cardWidth + spacing);
+        btn->setFixedSize(cardWidth, cardHeight);
+        btn->move(x, playerY);
+        btn->show();
+        player_cards_place.push_back(btn);
+    }
+
+    for (int i = 0; i < 5; ++i) {
+        QPushButton* btn = new QPushButton(this);
+        int x = startX + i * (cardWidth + spacing);
+        btn->setFixedSize(cardWidth, cardHeight);
+        btn->move(x, opponentY);
+        btn->show();
+        op_cards_place.push_back(btn);
+    }
+}
+
+
+
+
+
+
+void Poffer::animation(QPoint final_pos , QPushButton* button){
+    QTimer* timer = new QTimer();
+    connect(timer,&QTimer::timeout,this,[=](){
+        QPoint pos = button->pos();
+        pos.setX(pos.x() + 5);
+        button->move(pos);
+        if(button->pos().x()==final_pos.x()){
+            timer->stop();
+        }
+
+    });
+
+    timer->start(20);
+
+}
 
 
 
@@ -58,99 +132,305 @@ void Poffer::choose_Card(QVector<Card> c, QString starter, bool a) {
     int cardWidth = 130;
     int cardHeight = 180;
     int spacing = 20;
-
+    QVector<QPushButton*> btn;
     int totalWidth = 7 * cardWidth + 6 * spacing;
     int startX = (1200 - totalWidth) / 2;
     int y = (700 - cardHeight) / 2;
 
+    QJsonObject payload;
+    QJsonObject mainobject;
+    mainobject["command"] = "select_card";
+    mainobject["payload"] = payload;
+    payload["username"] = username;
+
+
+
     // کارت اول
     QPushButton *button1 = new QPushButton(this);
+    QPushButton *button2 = new QPushButton(this);
+    QPushButton *button3 = new QPushButton(this);
+    QPushButton *button4 = new QPushButton(this);
+    QPushButton *button5 = new QPushButton(this);
+    QPushButton *button6 = new QPushButton(this);
+    QPushButton *button7 = new QPushButton(this);
+
+
+
+
+
+
+
     QPixmap pix1(c[0].imagePath);
     button1->setIcon(QIcon(pix1));
     button1->setIconSize(QSize(cardWidth, cardHeight));
     button1->setFixedSize(cardWidth, cardHeight);
-    button1->move(startX + 0 * (cardWidth + spacing), y);
+    QPoint pos_1;
+    pos_1.setX(startX + 0 * (cardWidth + spacing));
+    pos_1.setY(y);
+    button1->move(20, 255);
     button1->show();
+    animation(pos_1 , button1);
     connect(button1, &QPushButton::clicked, this, [=]() {
         QMessageBox::information(this, "Card Selected", "You selected: " + c[0].rank + " of " + c[0].suit);
+        QJsonObject payload;
+        payload["username"] = username;
+        payload["suit"] = c[0].suit;
+        payload["rank"] = c[0].rank;
+        myhand.push_back(c[0]);
+        QJsonObject mainobject;
+        mainobject["command"] = "select_card";
+        mainobject["payload"] = payload;
+        player_cards_place[round]->setIcon(c[0].imagePath);
+        player_cards_place[round]->setIconSize(QSize(cardWidth, cardHeight));
+        QJsonDocument doc(mainobject);
+        QByteArray json_to_send = doc.toJson(QJsonDocument::Compact);
+
+        // ارسال به سرور
+        client_socket->sendData(json_to_send);
+        button1->hide();
+        button2->hide();
+        button3->hide();
+        button4->hide();
+        button5->hide();
+        button6->hide();
+        button7->hide();
+
+
     });
 
+
+
     // کارت دوم
-    QPushButton *button2 = new QPushButton(this);
     QPixmap pix2(c[1].imagePath);
     button2->setIcon(QIcon(pix2));
     button2->setIconSize(QSize(cardWidth, cardHeight));
     button2->setFixedSize(cardWidth, cardHeight);
-    button2->move(startX + 1 * (cardWidth + spacing), y);
+    QPoint pos_2;
+    pos_2.setX(startX + 1 * (cardWidth + spacing));
+    pos_2.setY(y);
+    button2->move(20, 255);
     button2->show();
+    animation(pos_2 , button2);
     connect(button2, &QPushButton::clicked, this, [=]() {
         QMessageBox::information(this, "Card Selected", "You selected: " + c[1].rank + " of " + c[1].suit);
+        QJsonObject payload;
+        payload["username"] = username;
+        payload["suit"] = c[1].suit;
+        payload["rank"] = c[1].rank;
+        myhand.push_back(c[1]);
+
+        QJsonObject mainobject;
+        mainobject["command"] = "select_card";
+        mainobject["payload"] = payload;
+        player_cards_place[round]->setIcon(c[1].imagePath);
+        player_cards_place[round]->setIconSize(QSize(cardWidth, cardHeight));
+        QJsonDocument doc(mainobject);
+        QByteArray json_to_send = doc.toJson(QJsonDocument::Compact);
+
+        // ارسال به سرور
+        client_socket->sendData(json_to_send);
+        button1->hide();
+        button2->hide();
+        button3->hide();
+        button4->hide();
+        button5->hide();
+        button6->hide();
+        button7->hide();
     });
 
     // کارت سوم
-    QPushButton *button3 = new QPushButton(this);
     QPixmap pix3(c[2].imagePath);
     button3->setIcon(QIcon(pix3));
     button3->setIconSize(QSize(cardWidth, cardHeight));
     button3->setFixedSize(cardWidth, cardHeight);
-    button3->move(startX + 2 * (cardWidth + spacing), y);
+    QPoint pos_3;
+    pos_3.setX(startX + 2 * (cardWidth + spacing));
+    pos_3.setY(y);
+    button3->move(20, 255);
     button3->show();
+    animation(pos_3 , button3);
     connect(button3, &QPushButton::clicked, this, [=]() {
         QMessageBox::information(this, "Card Selected", "You selected: " + c[2].rank + " of " + c[2].suit);
+        QJsonObject payload;
+        payload["username"] = username;
+        payload["suit"] = c[2].suit;
+        payload["rank"] = c[2].rank;
+        myhand.push_back(c[2]);
+
+        QJsonObject mainobject;
+        mainobject["command"] = "select_card";
+        mainobject["payload"] = payload;
+        player_cards_place[round]->setIcon(c[2].imagePath);
+        player_cards_place[round]->setIconSize(QSize(cardWidth, cardHeight));
+        QJsonDocument doc(mainobject);
+        QByteArray json_to_send = doc.toJson(QJsonDocument::Compact);
+
+        // ارسال به سرور
+        client_socket->sendData(json_to_send);
+        button1->hide();
+        button2->hide();
+        button3->hide();
+        button4->hide();
+        button5->hide();
+        button6->hide();
+        button7->hide();
     });
 
     // کارت چهارم
-    QPushButton *button4 = new QPushButton(this);
     QPixmap pix4(c[3].imagePath);
     button4->setIcon(QIcon(pix4));
     button4->setIconSize(QSize(cardWidth, cardHeight));
     button4->setFixedSize(cardWidth, cardHeight);
-    button4->move(startX + 3 * (cardWidth + spacing), y);
+    QPoint pos_4;
+    pos_4.setX(startX + 3 * (cardWidth + spacing));
+    pos_4.setY(y);
+    button4->move(20, 255);
     button4->show();
+    animation(pos_4 , button4);
     connect(button4, &QPushButton::clicked, this, [=]() {
         QMessageBox::information(this, "Card Selected", "You selected: " + c[3].rank + " of " + c[3].suit);
+        QJsonObject payload;
+        payload["username"] = username;
+        payload["suit"] = c[3].suit;
+        payload["rank"] = c[3].rank;
+        myhand.push_back(c[3]);
+
+        QJsonObject mainobject;
+        mainobject["command"] = "select_card";
+        mainobject["payload"] = payload;
+        player_cards_place[round]->setIcon(c[3].imagePath);
+        player_cards_place[round]->setIconSize(QSize(cardWidth, cardHeight));
+        QJsonDocument doc(mainobject);
+        QByteArray json_to_send = doc.toJson(QJsonDocument::Compact);
+
+        // ارسال به سرور
+        client_socket->sendData(json_to_send);
+        button1->hide();
+        button2->hide();
+        button3->hide();
+        button4->hide();
+        button5->hide();
+        button6->hide();
+        button7->hide();
     });
 
     // کارت پنجم
-    QPushButton *button5 = new QPushButton(this);
     QPixmap pix5(c[4].imagePath);
     button5->setIcon(QIcon(pix5));
     button5->setIconSize(QSize(cardWidth, cardHeight));
     button5->setFixedSize(cardWidth, cardHeight);
-    button5->move(startX + 4 * (cardWidth + spacing), y);
+    QPoint pos_5;
+    pos_5.setX(startX + 4 * (cardWidth + spacing));
+    pos_5.setY(y);
+    button5->move(20, 255);
     button5->show();
+    animation(pos_5 , button5);
     connect(button5, &QPushButton::clicked, this, [=]() {
         QMessageBox::information(this, "Card Selected", "You selected: " + c[4].rank + " of " + c[4].suit);
+        QJsonObject payload;
+        payload["username"] = username;
+        payload["suit"] = c[4].suit;
+        payload["rank"] = c[4].rank;
+        myhand.push_back(c[4]);
+        player_cards_place[round]->setIcon(c[4].imagePath);
+        player_cards_place[round]->setIconSize(QSize(cardWidth, cardHeight));
+        QJsonObject mainobject;
+        mainobject["command"] = "select_card";
+        mainobject["payload"] = payload;
+
+        QJsonDocument doc(mainobject);
+        QByteArray json_to_send = doc.toJson(QJsonDocument::Compact);
+
+        // ارسال به سرور
+        client_socket->sendData(json_to_send);
+        button1->hide();
+        button2->hide();
+        button3->hide();
+        button4->hide();
+        button5->hide();
+        button6->hide();
+        button7->hide();
     });
 
     // کارت ششم
-    QPushButton *button6 = new QPushButton(this);
     QPixmap pix6(c[5].imagePath);
     button6->setIcon(QIcon(pix6));
     button6->setIconSize(QSize(cardWidth, cardHeight));
     button6->setFixedSize(cardWidth, cardHeight);
-    button6->move(startX + 5 * (cardWidth + spacing), y);
+    QPoint pos_6;
+    pos_6.setX(startX + 5 * (cardWidth + spacing));
+    pos_6.setY(y);
+    button6->move(20, 255);
     button6->show();
+    animation(pos_6 , button6);
     connect(button6, &QPushButton::clicked, this, [=]() {
         QMessageBox::information(this, "Card Selected", "You selected: " + c[5].rank + " of " + c[5].suit);
+        QJsonObject payload;
+        payload["username"] = username;
+        payload["suit"] = c[5].suit;
+        payload["rank"] = c[5].rank;
+        myhand.push_back(c[5]);
+        player_cards_place[round]->setIcon(c[5].imagePath);
+        player_cards_place[round]->setIconSize(QSize(cardWidth, cardHeight));
+        QJsonObject mainobject;
+        mainobject["command"] = "select_card";
+        mainobject["payload"] = payload;
+
+        QJsonDocument doc(mainobject);
+        QByteArray json_to_send = doc.toJson(QJsonDocument::Compact);
+
+        // ارسال به سرور
+        client_socket->sendData(json_to_send);
+        button1->hide();
+        button2->hide();
+        button3->hide();
+        button4->hide();
+        button5->hide();
+        button6->hide();
+        button7->hide();
     });
 
+    if(c.size()>6){
+        QPixmap pix7(c[6].imagePath);
+        button7->setIcon(QIcon(pix7));
+        button7->setIconSize(QSize(cardWidth, cardHeight));
+        button7->setFixedSize(cardWidth, cardHeight);
+        QPoint pos_7;
+        pos_7.setX(startX + 6 * (cardWidth + spacing));
+        pos_7.setY(y);
+        button7->move(20, 255);
+        button7->show();
+        animation(pos_7 , button7);
+        connect(button7, &QPushButton::clicked, this, [=]() {
+            QMessageBox::information(this, "Card Selected", "You selected: " + c[6].rank + " of " + c[6].suit);
+            QJsonObject payload;
+            payload["username"] = username;
+            payload["suit"] = c[6].suit;
+            payload["rank"] = c[6].rank;
+            myhand.push_back(c[6]);
+
+            QJsonObject mainobject;
+            mainobject["command"] = "select_card";
+            mainobject["payload"] = payload;
+
+            QJsonDocument doc(mainobject);
+            QByteArray json_to_send = doc.toJson(QJsonDocument::Compact);
+
+            // ارسال به سرور
+            client_socket->sendData(json_to_send);
+            button1->hide();
+            button2->hide();
+            button3->hide();
+            button4->hide();
+            button5->hide();
+            button6->hide();
+            button7->hide();
+        });
+    }
 
 
 
 
-
-
-    QPushButton *button7 = new QPushButton(this);
-    QPixmap pix7(c[6].imagePath);
-    button7->setIcon(QIcon(pix7));
-    button7->setIconSize(QSize(cardWidth, cardHeight));
-    button7->setFixedSize(cardWidth, cardHeight);
-    button7->move(startX + 6 * (cardWidth + spacing), y);
-    button7->show();
-    connect(button7, &QPushButton::clicked, this, [=]() {
-        QMessageBox::information(this, "Card Selected", "You selected: " + c[6].rank + " of " + c[6].suit);
-    });
 }
 
 
@@ -163,14 +443,14 @@ void Poffer::show_turn(Card p , Card o){
     QLabel* p_lable = new QLabel(this);
     QLabel* o_lable = new QLabel(this);
 
-    p_lable->setFixedSize(150, 200);
-    o_lable->setFixedSize(150, 200);
+    p_lable->setFixedSize(130, 180);
+    o_lable->setFixedSize(130, 180);
 
     p_lable->setPixmap(pix_player.scaled(p_lable->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
     o_lable->setPixmap(pix_enemy.scaled(o_lable->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
 
-    p_lable->move(20, 255);   // وسط سمت چپ
-    o_lable->move(20, 255); // وسط سمت راست
+    p_lable->move(100, 250);   // وسط سمت چپ
+    o_lable->move(980, 250); // وسط سمت راست
 
     p_lable->show();
     o_lable->show();
@@ -179,28 +459,31 @@ void Poffer::show_turn(Card p , Card o){
     QTimer* timer_2 = new QTimer(this);
     connect(timer, &QTimer::timeout, this, [=]() mutable {
         QPoint pos = p_lable->pos();
-        pos.setX(pos.x() + 10);
-        pos.setY(pos.y() - 5);
+        pos.setY(pos.y() + 8);
         p_lable->move(pos);
-        if(pos.x() >= 535 || pos.y() >= 430) {
+        if(pos.y() >= 549 ) {
             timer->stop();
         }
     });
     connect(timer_2, &QTimer::timeout, this, [=]() mutable {
         QPoint pos = o_lable->pos();
-        pos.setX(pos.x() + 10);
-        pos.setY(pos.y() + 5);
+        pos.setX(pos.x());
+        pos.setY(pos.y() - 8);
         o_lable->move(pos);
-        if(pos.x() >= 535 ) {
+        if(pos.y() <= 20 ) {
             timer_2->stop();
+
         }
     });
     timer->start(30);
     timer_2->start(30);
-    QTimer::singleShot(3000,this,[=](){
+    QTimer::singleShot(5000, this, [=](){
         p_lable->hide();
         o_lable->hide();
+        qDebug()<<"www";
+        emit turn_showed();
     });
+
 
 
 }
@@ -273,21 +556,56 @@ Card Poffer::find_card(QString rank , QString suit){
 
 
 
-QVector<Card> Poffer::get_list_card_of_turn(QVector<Card> c2 , QString starter , bool a){
+QVector<Card> Poffer::get_list_card_of_turn( QString starter , bool turn){
     QJsonObject payload;
     QJsonObject mainobject;
     mainobject["command"] = "request_card";
     mainobject["payload"] = payload;
+    payload["username"] = username;
     QVector<Card> c;
     QJsonDocument doc(mainobject);
     auto json_to_send = doc.toJson(QJsonDocument::Compact);
     client_socket->sendData(json_to_send);
 
+
+    QMetaObject::Connection conn;
+    QEventLoop loop;
+    QLabel* lable = new QLabel(this);
+    lable->setText("waiting......");
+    lable->setAlignment(Qt::AlignCenter);  // اضافه برای وسط‌چین کردن متن
+    lable->setStyleSheet(R"(
+QLabel {
+    background-color: qlineargradient(
+        x1:0, y1:0, x2:1, y2:1,
+        stop:0 #6a11cb, stop:1 #2575fc
+    );
+    color: white;
+    font: 16pt "Segoe UI";
+    padding: 10px 20px;
+    border-radius: 12px;
+    border: 2px solid #3b3b98;
+    /* text-align: center;  --> در Qt کاربردی ندارد */
+    /* سایه ملایم متن */
+}
+)");
+    lable->show();
+    QByteArray res_main;
+   /* conn = connect(client_socket , &SocketManager::dataReceived , this ,[&](){
+    res_main = client_socket->get_response();
+        lable->close();
+       loop.quit();
+    });
+    loop.exec(); // منتظر دریافت پاسخ بمان
+*/
+    QTimer* timer = new QTimer();
+    connect(timer , &QTimer::timeout , this , [&](){
+        lable->close();
+        loop.quit();
+    });
+    timer->start(5000);
+     loop.exec();
+    timer->stop();
     // گرفتن پاسخ
-
-
-
-
    // auto res = client_socket->get_response();
     QByteArray test_json = R"(
 {
@@ -328,15 +646,13 @@ QVector<Card> Poffer::get_list_card_of_turn(QVector<Card> c2 , QString starter ,
     }
 
     if(payload_2["starter_username"]==starter){
-        a= true;
+        turn= true;
     }
     else{
-        a = false;
+        turn = false;
     }
 
     return c;
-
-
 
 }
 
@@ -410,10 +726,6 @@ void Poffer::get_card(){
 
 
 }
-
-
-
-
 
 
 

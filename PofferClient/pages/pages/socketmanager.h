@@ -22,6 +22,7 @@ signals:
     void dataReceived(QByteArray data);
     void dataWritten(qint64 bytes);
 
+
 private slots:
     void onConnected();
     void onDisconnected();
