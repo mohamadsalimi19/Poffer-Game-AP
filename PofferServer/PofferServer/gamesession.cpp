@@ -18,34 +18,37 @@ GameSession::GameSession(Player* player1, Player* player2, QObject *parent)
 //////////////////////////////////////////////////////////////////////////////////////////
 void GameSession::startNewRound()
 {
-    qDebug() << "<--------- Starting New Round --------->";
+    m_round_number++; // increase round number
+    qDebug() << "<--------- Starting Round" << m_round_number << "--------->";
 
     m_player1_hand.clear();
     m_player2_hand.clear();
 
-    qDebug() << "Determining who starts the round...";
+    if (m_round_number == 1) {
+        // for round 1
+        qDebug() << "Round 1: Determining starter with Diamond cards...";
+        Deck starterDeck;
+        starterDeck.shuffle();
+        Card card1 = starterDeck.dealDiamondCard();
+        Card card2 = starterDeck.dealDiamondCard();
 
-    // temp deck for detemine first player
-    Deck starterDeck;
-    starterDeck.shuffle();
+        qDebug() << "Determination cards ->" << m_player1->getUsername() << ": Diamond Rank" << card1.getRank()
+                 << "---" << m_player2->getUsername() << ": Diamond Rank" << card2.getRank();
 
-    // 2 card
-    Card card1 = starterDeck.dealDiamondCard();
-    Card card2 = starterDeck.dealDiamondCard();
+        if (card1.getRank() > card2.getRank()) {
+            m_currentPlayerForDraft = m_player1;
+        } else {
+            m_currentPlayerForDraft = m_player2;
+        }
 
-    qDebug() << "Determination cards ->" << m_player1->getUsername() << ": Diamond Rank" << card1.getRank()
-             << "---" << m_player2->getUsername() << ": Diamond Rank" << card2.getRank();
-
-    // determine
-    if (card1.getRank() > card2.getRank()) {
-        m_currentPlayerForDraft = m_player1;
     } else {
-        // if equal player 2 started -- > never  happend
-        m_currentPlayerForDraft = m_player2;
+        // another rounds
+        // update current player
+        m_currentPlayerForDraft = (m_currentPlayerForDraft == m_player1) ? m_player2 : m_player1;
+        qDebug() << "Round" << m_round_number << ": Turn alternates to the other player.";
     }
 
     qDebug() << m_currentPlayerForDraft->getUsername() << "will start the drafting phase.";
-
 
     qDebug() << "Preparing a new full deck for the round...";
     m_deck = Deck();
@@ -53,7 +56,6 @@ void GameSession::startNewRound()
 
     startDraftingPhase();
 }
-
 //////////////////////////////////////////////////////////////////////////////////////////
 void GameSession::startDraftingPhase(){
     try{
@@ -102,34 +104,41 @@ void GameSession::sendDraftPoolToCurrentPlayer()
 ///while a player select a card this function has been run
 void GameSession::playerSelectedCard(Player* player, const Card& selectedCard)
 {
-    // checkin turn player
+    // checking turn player
     if (player != m_currentPlayerForDraft) {
-        qDebug() << "Warning:" << player->getUsername() << "played out of turn!";
+        qWarning() << "Received card selection from" << player->getUsername() << "but it's not their turn.";
         return;
     }
 
-    qDebug() << player->getUsername() << "selected a card.";
+    // deleting selected card from draft pool
+    bool card_removed = m_draftPool.removeOne(selectedCard);
+    if (!card_removed) {
+        qWarning() << "Player" << player->getUsername() << "selected a card that is not in the draft pool.";
+        return;
+    }
 
-    // add card to player hand
+    // adding card to player hand
     if (player == m_player1) {
         m_player1_hand.addCard(selectedCard);
     } else {
         m_player2_hand.addCard(selectedCard);
     }
+    qDebug() << player->getUsername() << "selected a card. Their hand size is now:" << (player == m_player1 ? m_player1_hand.getCards().size() : m_player2_hand.getCards().size());
 
-    // remove selected card from draft : Card class needs == operator
-    m_draftPool.removeOne(selectedCard); //
-
-    // checking capacity hand
+    // checking if player hands is full , start evaluating
     if (m_player1_hand.getCards().size() == 5 && m_player2_hand.getCards().size() == 5) {
-        qDebug() << "Drafting is complete. Evaluating hands...";
+        qDebug() << "Drafting phase is complete. Evaluating hands...";
         evaluateAndFinishRound();
-    } else {
-        m_currentPlayerForDraft = (m_currentPlayerForDraft == m_player1) ? m_player2 : m_player1;
-        sendDraftPoolToCurrentPlayer();
+        return;
     }
-}
 
+    // update turn
+    m_currentPlayerForDraft = (m_currentPlayerForDraft == m_player1) ? m_player2 : m_player1;
+    qDebug() << "It is now" << m_currentPlayerForDraft->getUsername() << "'s turn to draft.";
+
+    //  pass other cards to next player
+    sendDraftPoolToCurrentPlayer();
+}
 //////////////////////////////////////////////////////////////////////////////////////////
 /*oid GameSession::evaluateAndFinishRound()
 {
