@@ -26,7 +26,8 @@ class GameSession : public QObject
 private:
     void startDraftingPhase(); // start sharing cards
     void sendDraftPoolToCurrentPlayer(); // give 7 card to current palyer
-
+    void endGame(Player* winner, const QString& reason);
+    void onDisconnectTimerTimeout();
 
     Player* breakTie(const Hand& hand1, const Hand& hand2, HandEvaluator::HandRank rank); // if 2 hand is equal chek it in herre
 
@@ -37,8 +38,12 @@ private:
     Hand m_player1_hand;  // hand of player 1
     Hand m_player2_hand; // hand of player 2
 
+    QTimer* m_disconnectTimer; // timer
+    Player* m_disconnectedPlayer = nullptr; // carry player that disconnected
+
     int m_player1_score;
     int m_player2_score;
+    int m_round_number = 0; // for checking turn player after round 1
 
     Deck m_deck;   // deck that update every roudn
     HandEvaluator m_evaluator;
@@ -54,6 +59,8 @@ public:
     // void evaluateAndFinishRound(); // caculate winner
     Player* evaluateAndFinishRound();
 
+    void playerDisconnected(Player* disconnectedPlayer);
+
     // this function clalled by client hanlder while player select a card
     void playerSelectedCard(Player* player, const Card& selectedCard);
 
@@ -65,6 +72,12 @@ public:
     void setPlayer2Hand(const Hand& hand) {
         m_player2_hand = hand;
     }
+
+    bool isPlayerInSession(Player* player);
+    void reconnectPlayer(Player* player);
+
+signals:
+    void gameFinished(GameSession* session);
 
 };
 
