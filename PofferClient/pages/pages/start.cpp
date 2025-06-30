@@ -6,18 +6,30 @@
 #include<QVBoxLayout>
 #include<QTimer>
 #include"poffer.h"
-start::start(QWidget *parent)
-    : QWidget(parent)
-    , ui(new Ui::start)
+start::start(const QString& un, SocketManager* client, QWidget *parent)
+    : QWidget(parent),
+    ui(new Ui::start),
+    username(un),
+    client_socket(client)
 {
-    client_socket = new SocketManager();
     ui->setupUi(this);
-    start_game();
 
+    connect(client_socket, &SocketManager::dataReceived, this, [=]() {
+        if (get_start_response()) {
+            Poffer* g = new Poffer(client_socket, username, this->parentWidget());
+            g->setGeometry(this->geometry());
+            g->show();
+            this->close();
+        }
+    });
+
+    start_game();
 }
 
-void start::set_username(QString un){
+
+void start::set_username(QString un, SocketManager* client){
     username = un;
+    client_socket = client;
 }
 
 
@@ -68,27 +80,9 @@ QLabel {
 }
 )");
     QVBoxLayout* layout = new QVBoxLayout(this);
-
     layout->addWidget(statue);
-    client_socket->connectToServer("127.0.0.1",8888);
     client_socket->sendData(make_requset_json());
 
-
-
-    QTimer *timer = new QTimer(this);
-    connect(timer, &QTimer::timeout, this, [=]() {
-        if(get_start_response()) {
-            statue->hide();
-            timer->stop();
-            Poffer* g = new Poffer(client_socket, username, this->parentWidget());
-            g->setGeometry(this->geometry());
-            g->show();
-            this->close();
-
-
-        }
-    });
-    timer->start(100);
 }
 
 

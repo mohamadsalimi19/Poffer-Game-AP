@@ -1,12 +1,23 @@
 #include "forgot.h"
 #include "ui_forgot.h"
 #include<signup.h>
+#include"QPainter"
 Forgot::Forgot(QWidget *parent)
     : QWidget(parent)
     , ui(new Ui::Forgot)
 {
     ui->setupUi(this);
+    mysocket  = new SocketManager();
+    connect(mysocket, &SocketManager::dataReceived, this, &Forgot::onServerResponse);
+    connect(mysocket,&SocketManager::connected,this,[=](){
+        make_json();
+        mysocket->sendData(json_to_send);
+    });
+
+
 }
+
+
 
 Forgot::~Forgot()
 {
@@ -32,10 +43,10 @@ void Forgot::make_json(){
     playload["phone_number"] = phonenum;
     playload["newpassword"] = newpass;
     QJsonObject mainobject;
-    mainobject["command"] = "forgot";
+    mainobject["command"] = "forget";
     mainobject["payload"] = playload;
     QJsonDocument doc(mainobject);
-    QByteArray json_to_send = doc.toJson(QJsonDocument::Compact);
+     json_to_send = doc.toJson(QJsonDocument::Compact);
 }
 
 
@@ -56,20 +67,28 @@ bool Forgot::read_json(QByteArray res){
 
 void Forgot::on_pushButton_clicked()
 {
-    SocketManager* mysocket;
-    //mysocket->connectToServer()
-    //make_json();
-    //mysocket->sendData(json_to_send);
-    if(read_json(mysocket->get_response())){
-        QMessageBox::warning(this,"warning", " your password was change");
-        this->close();
-        Login* lp = new Login();
-        lp->show();
-    }
+    mysocket->connectToServer("127.0.0.1",8888);
+
+
 
 }
 
 
+void Forgot::onServerResponse(QByteArray data){
+    if (read_json(data)) {
+        QMessageBox::information(this, "Success", "Signed up successfully!");
+        this->close();
+        Login* l = new Login();
+        this->close();
+        l->show();
+    }
+
+    else{
+        QMessageBox::information(this, "eror", data);
+    }
+
+
+}
 
 void Forgot::on_pushButton_2_clicked()
 {

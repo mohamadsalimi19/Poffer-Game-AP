@@ -177,24 +177,6 @@ QLineEdit:selected {
     </item>
    </layout>
   </widget>
-  <widget class="QWidget" name="verticalLayoutWidget">
-   <property name="geometry">
-    <rect>
-     <x>230</x>
-     <y>240</y>
-     <width>601</width>
-     <height>111</height>
-    </rect>
-   </property>
-   <layout class="QVBoxLayout" name="verticalLayout">
-    <item>
-     <widget class="QLineEdit" name="lineEdit"/>
-    </item>
-    <item>
-     <widget class="QLineEdit" name="lineEdit_2"/>
-    </item>
-   </layout>
-  </widget>
   <widget class="QPushButton" name="pushButton">
    <property name="geometry">
     <rect>
@@ -328,10 +310,10 @@ QLineEdit:selected {
   <widget class="QPushButton" name="pushButton_3">
    <property name="geometry">
     <rect>
-     <x>360</x>
-     <y>460</y>
+     <x>350</x>
+     <y>450</y>
      <width>161</width>
-     <height>51</height>
+     <height>61</height>
     </rect>
    </property>
    <property name="styleSheet">
@@ -388,6 +370,26 @@ QLineEdit:selected {
    </property>
    <property name="text">
     <string>sign up</string>
+   </property>
+  </widget>
+  <widget class="QLineEdit" name="lineEdit_3">
+   <property name="geometry">
+    <rect>
+     <x>240</x>
+     <y>250</y>
+     <width>599</width>
+     <height>41</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QLineEdit" name="lineEdit_2">
+   <property name="geometry">
+    <rect>
+     <x>240</x>
+     <y>300</y>
+     <width>599</width>
+     <height>41</height>
+    </rect>
    </property>
   </widget>
  </widget>

@@ -37,13 +37,14 @@ void information::paintEvent(QPaintEvent *event)
     QWidget::paintEvent(event);
 }
 
-void information::set(QString user,QString nam,QString lastnam, QString gmai,QString phone_nu,QString passs){
+void information::set(QString user,QString nam,QString lastnam, QString gmai,QString phone_nu,QString passs ,SocketManager* s){
     username = user;
     nam = name;
     lastname = lastnam;
     gmail = gmai;
     phone_num = phone_nu;
     pass = passs;
+    mys = s;
 }
 
 
@@ -246,10 +247,9 @@ void information::on_pushButton_2_clicked()
 
 void information::on_pushButton_7_clicked()
 {
-
     this->close();
     menu* mn = new menu();
-    mn->set(username,name,lastname,gmail,phone_num,pass);
+    mn->set(username,name,lastname,gmail,phone_num,pass,mys);
     this->close();
     mn->show();
 }

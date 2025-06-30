@@ -2,7 +2,7 @@
 #define MENU_H
 
 #include <QWidget>
-
+#include"socketmanager.h"
 namespace Ui {
 class menu;
 }
@@ -16,9 +16,10 @@ class menu : public QWidget
     QString gmail;
     QString phone_num;
     QString password;
+    SocketManager* mysocket;
 
 public:
-    void set(QString username,QString name,QString lastname, QString gmail,QString phone_num , QString pass);
+    void set(QString username,QString name,QString lastname, QString gmail,QString phone_num , QString pass , SocketManager* s);
     explicit menu(QWidget *parent = nullptr);
     ~menu();
 

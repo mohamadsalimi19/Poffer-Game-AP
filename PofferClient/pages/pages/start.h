@@ -15,9 +15,9 @@ class start : public QWidget
 public:
    QByteArray make_requset_json();
     bool get_start_response();
-    explicit start(QWidget *parent = nullptr);
+   explicit start(const QString& un, SocketManager* c, QWidget* parent = nullptr);
     ~start();
-    void set_username(QString un);
+    void set_username(QString un , SocketManager* client);
     void start_game();
 
 public slots:

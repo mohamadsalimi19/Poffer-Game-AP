@@ -20,6 +20,7 @@ class signup : public QWidget
     QByteArray jason_to_send;
 
 public:
+    void paintEvent(QPaintEvent *event) override;
     explicit signup(QWidget *parent = nullptr);
     ~signup();
     void makejason();
@@ -43,6 +44,8 @@ private slots:
     void on_pushButton_clicked();
 
 
+
+    void on_pushButton_2_clicked();
 
 private:
     Ui::signup *ui;

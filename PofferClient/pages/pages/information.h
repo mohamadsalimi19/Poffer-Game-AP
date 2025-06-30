@@ -2,7 +2,7 @@
 #define INFORMATION_H
 
 #include <QWidget>
-
+#include"socketmanager.h"
 namespace Ui {
 class information;
 }
@@ -23,12 +23,13 @@ class information : public QWidget
     QString newlastname="";
     QString newgmail="";
     QString newphone_num="";
+    SocketManager* mys;
 
 protected:
     void paintEvent(QPaintEvent *event) override;
 
 public:
-    void set(QString username,QString name,QString lastname, QString gmail,QString phone_num,QString pass);
+    void set(QString username,QString name,QString lastname, QString gmail,QString phone_num,QString pass , SocketManager* s);
     void enter_filds();
     void make_json();
     bool read_json(QByteArray ar);

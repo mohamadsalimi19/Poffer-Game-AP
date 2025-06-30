@@ -142,20 +142,21 @@ menu::~menu()
 
 
 
-void menu::set(QString user,QString nam,QString lastnam, QString gmai,QString phone_nu,QString pass){
+void menu::set(QString user,QString nam,QString lastnam, QString gmai,QString phone_nu,QString pass, SocketManager* s){
     username = user;
     nam = name;
     lastname = lastnam;
     gmail = gmai;
     phone_num = phone_nu;
     password = pass;
+    mysocket =s;
 }
 
 
 void menu::on_pushButton_3_clicked()
 {
     information* inft = new information();
-    inft->set(username,name,lastname,gmail,phone_num,password);
+    inft->set(username,name,lastname,gmail,phone_num,password,mysocket);
     this->close();
     inft->show();
 }
@@ -163,7 +164,7 @@ void menu::on_pushButton_3_clicked()
 
 void menu::on_pushButton_2_clicked(){
 
-    start* sp = new start();
+    start* sp = new start(username,mysocket);
     this->close();
     sp->show();
 

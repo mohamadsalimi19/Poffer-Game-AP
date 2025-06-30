@@ -2,7 +2,7 @@
 #define FORGOT_H
 
 #include <QWidget>
-
+#include"socketmanager.h"
 namespace Ui {
 class Forgot;
 }
@@ -15,6 +15,8 @@ class Forgot : public QWidget
     void make_json();
     bool read_json(QByteArray ar);
     QByteArray json_to_send;
+    SocketManager* mysocket;
+
 
 public:
     explicit Forgot(QWidget *parent = nullptr);
@@ -28,6 +30,8 @@ private slots:
     void on_pushButton_clicked();
 
     void on_pushButton_2_clicked();
+    void onServerResponse(QByteArray data);
+
 
 private:
     Ui::Forgot *ui;

@@ -17,6 +17,7 @@ void SocketManager::connectToServer(QString ip, quint16 port) {
 
 void SocketManager::onConnected() {
     QMessageBox::warning(nullptr,"con","connected");
+    emit connected();
 }
 
 void SocketManager::sendData(const QByteArray &data) {

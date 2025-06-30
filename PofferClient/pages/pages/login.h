@@ -27,6 +27,7 @@ class Login : public QWidget
 
 public:
     explicit Login(QWidget *parent = nullptr);
+    void paintEvent(QPaintEvent *event) override;
     ~Login();
     void make_json();
     bool read_json(QByteArray ar);
@@ -44,6 +45,9 @@ private slots:
     void on_pushButton_2_clicked();
 
     void on_pushButton_3_clicked();
+
+
+    void on_lineEdit_3_textEdited(const QString &arg1);
 
 private:
     Ui::Login *ui;
