@@ -15,7 +15,7 @@ start::start(const QString& un, SocketManager* client, QWidget *parent)
     ui->setupUi(this);
 
     connect(client_socket, &SocketManager::dataReceived, this, [=]() {
-        if (get_start_response()) {
+        if (1) { // حواست باشع
             Poffer* g = new Poffer(client_socket, username, this->parentWidget());
             g->setGeometry(this->geometry());
             g->show();
@@ -35,7 +35,7 @@ void start::set_username(QString un, SocketManager* client){
 
 QByteArray start::make_requset_json(){
     QJsonObject playload;
-    playload["username"] = username ;
+    //playload["username"] = username ;
     QJsonObject mainobject;
     mainobject["command"] = "request_game";
     mainobject["payload"] = playload;

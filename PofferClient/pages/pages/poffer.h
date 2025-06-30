@@ -25,13 +25,17 @@ class Poffer : public QWidget
     QVector<QPushButton*>player_cards_place;
     QVector<QPushButton*>op_cards_place;
     QLabel* waiting_label ;
+    QLabel* my_point_labale;
+    QLabel* op_point_labale;
     int round;
+
    // QString starter;
    // Card player_start;
     //Card opp_start;
 
 
 public:
+    void show_point();
     void paintEvent(QPaintEvent *event) override;
     explicit Poffer(SocketManager* socket, QString username, QWidget *parent = nullptr);
     ~Poffer();
@@ -41,7 +45,7 @@ public:
     void start_round();
     Card find_card(QString rank , QString suit);
     void show_turn(Card p , Card o);
-    void get_list_card_of_turn( );
+    void show_wait( );
     void choose_Card(QVector<Card> c ,  QString starter , bool a);
     void animation(QPoint final_pos  , QPushButton* button );
     void delayWithEventLoop(int second ,QLabel* p_lable , QLabel* o_lable);
@@ -49,6 +53,10 @@ public:
     void show_myhand();
     void request_card();
     void handle_received_cards(QByteArray data);
+    void onServerResponse(QByteArray data);
+    void finish_round(QVector<Card> , QString result ,QString my_hand_rank , QString opponent_hand_rank , QString my_score , QString opponent_score);
+
+
 private slots:
 
 
@@ -56,7 +64,8 @@ signals:
     Card card_choosen();
     void turn_showed();
     void card_recived(QVector<Card> , QString a , bool b);
-
+    void card_selected();
+    void round_result(QVector<Card> , QString result ,QString my_hand_rank , QString opponent_hand_rank , QString my_score , QString opponent_score);
 
 private:
     Ui::Poffer *ui;

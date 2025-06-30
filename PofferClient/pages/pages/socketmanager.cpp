@@ -28,6 +28,7 @@ void SocketManager::sendData(const QByteArray &data) {
 
 void SocketManager::onDataRead() {
     QByteArray data = mySocket->readAll();
+    QMessageBox::warning(nullptr,"deb",data);
     QJsonDocument doc = QJsonDocument::fromJson(data);
     QJsonObject mainobj = doc.object();
     auto payload = mainobj["payload"].toObject();

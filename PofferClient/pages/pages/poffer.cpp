@@ -19,16 +19,24 @@ Poffer::Poffer(SocketManager* socket, QString username, QWidget *parent) :
     ui->setupUi(this);    
     this->setFixedSize(1300, 750);
     get_card();
-    connect(this, &Poffer::turn_showed, this, &Poffer::get_list_card_of_turn);
+    connect(this, &Poffer::turn_showed, this,[=](){
+        QJsonObject payload;
+        QJsonObject mainobject;
+        mainobject["command"] = "request_card";
+        payload["username"] = username;
+        mainobject["payload"] = payload;
+        QJsonDocument doc(mainobject);
+        auto json_to_send = doc.toJson(QJsonDocument::Compact);
+      //  client_socket->sendData(json_to_send);
+        show_wait();
+    });
+    connect(client_socket,&SocketManager::dataReceived,this,&Poffer::onServerResponse);
     connect(this, &Poffer::card_recived, this, &Poffer::choose_Card);
+    connect(this,&Poffer::card_selected,this,&Poffer::show_wait);
+    connect(this,&Poffer::round_result,this,&Poffer::finish_round);
+
     show_myhand();
-    start_round();
-    round++;
-    start_round();
-    round++;
-    start_round();
-    start_round();
-    start_round();
+    show_point();
 
 }
 bool finish_turn = false;
@@ -58,9 +66,136 @@ void Poffer::start_round(){
     }
     else{
         QByteArray t;
-        get_list_card_of_turn();
+       // get_list_card_of_turn();
     }
 }
+
+
+
+void Poffer::finish_round(QVector<Card> op_card,  QString result,QString my_hand_rank,  QString opponent_hand_rank,    QString my_score,   QString opponent_score) {
+    int cardWidth = 130;
+    int cardHeight = 180;
+
+    for (int i = 0; i < 5 && i < op_card.size(); i++) {
+        op_cards_place[i]->setIcon(QIcon(op_card[i].imagePath));
+        op_cards_place[i]->setIconSize(QSize(cardWidth, cardHeight));
+    }
+    op_point_labale->setText(opponent_score);
+    my_point_labale->setText(my_score);
+    QLabel* result_show = new QLabel(this);
+    result_show->setText("result: " + result);
+    result_show->setAlignment(Qt::AlignCenter);
+    result_show->setStyleSheet("color: white; background-color: #444; font: 16pt;");
+    result_show->setGeometry(400, 300, 500, 50);
+    result_show->show();
+
+    QLabel* my_hand_rank_show = new QLabel(this);
+    my_hand_rank_show->setText(" my hand: " + my_hand_rank);
+    my_hand_rank_show->setAlignment(Qt::AlignCenter);
+    my_hand_rank_show->setStyleSheet("color: white; background-color: #555; font: 14pt;");
+    my_hand_rank_show->setGeometry(400, 360, 500, 50);
+    my_hand_rank_show->show();
+
+    QLabel* opponent_hand_rank_show = new QLabel(this);
+    opponent_hand_rank_show->setText("opp hand: " + opponent_hand_rank);
+    opponent_hand_rank_show->setAlignment(Qt::AlignCenter);
+    opponent_hand_rank_show->setStyleSheet("color: white; background-color: #555; font: 14pt;");
+    opponent_hand_rank_show->setGeometry(400, 420, 500, 50);
+    opponent_hand_rank_show->show();
+
+    QTimer::singleShot(6000, this, [=]() {
+        result_show->hide();
+        my_hand_rank_show->hide();
+        opponent_hand_rank_show->hide();
+        result_show->deleteLater();
+        my_hand_rank_show->deleteLater();
+        opponent_hand_rank_show->deleteLater();
+        emit turn_showed();
+    });
+}
+
+
+
+void Poffer::onServerResponse(QByteArray data){
+    if (waiting_label) {
+        waiting_label->hide();
+        waiting_label->deleteLater();
+        waiting_label = nullptr;
+    }
+    QJsonDocument doc = QJsonDocument::fromJson(data);
+    if (doc.isNull()) {
+        QMessageBox::warning(this, "خطا", "داده از سرور خراب است.");
+        return;
+    }
+    QJsonObject obj = doc.object();
+
+
+    if (obj["response"].toString()=="select_card_request"){
+        QVector<Card> cards;
+        QJsonArray card_array = obj["payload"].toObject()["cards"].toArray();
+        for (auto val : card_array) {
+            auto c = val.toObject();
+            QString suit = c["suit"].toString();
+            QString rank = c["rank"].toString();
+            auto t = find_card(rank,suit);
+            qDebug()<<t.rank;
+            cards.push_back(find_card(rank, suit));
+        }
+        emit card_recived(cards, username, true);
+    }
+
+    else if(obj["response"].toString()=="round_started"){
+        auto  playload_2 = obj["payload"].toObject();
+        auto oppunent_card =playload_2["opponent_card"].toObject();
+        auto player_card = playload_2["player_card"].toObject() ;
+        auto player_startcard = find_card( player_card["rank"].toString(), player_card["suit"].toString());
+        auto opp_startcard = find_card( oppunent_card["rank"].toString(), oppunent_card["suit"].toString());
+        show_turn(player_startcard,opp_startcard);
+    }
+
+    else if(obj["response"].toString()=="round_result"){
+        QVector<Card> opponent_hand;
+        QJsonArray card_array = obj["payload"].toObject()["opponent_hand"].toArray();
+        for (auto val : card_array) {
+            auto c = val.toObject();
+            QString suit = c["suit"].toString();
+            QString rank = c["rank"].toString();
+            auto t = find_card(rank,suit);
+            qDebug()<<t.rank;
+            opponent_hand.push_back(find_card(rank, suit));
+        }
+        auto payload = obj["payload"].toObject();
+        QString result = payload["result"].toString();
+        QString my_hand_rank = payload["my_hand_rank"].toString();
+        QString opponent_hand_rank = payload["opponent_hand_rank"].toString();
+        QString my_score = payload["my_score"].toString();
+        QString opponent_score = payload["opponent_score"].toString();
+        emit round_result(opponent_hand,result,my_hand_rank,opponent_hand_rank,my_score,opponent_score);
+    }
+
+
+
+
+}
+
+void Poffer::show_point(){
+    my_point_labale = new QLabel(this);
+    op_point_labale = new QLabel(this);
+
+    my_point_labale->setText("my point :0");
+    my_point_labale->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
+    my_point_labale->setStyleSheet("color: white; background-color: rgba(0,0,0,0.5); font: 14pt 'Segoe UI'; padding: 5px; border-radius: 8px;");
+    my_point_labale->setGeometry(20, 680, 200, 40);
+    my_point_labale->show();
+
+    op_point_labale->setText("enemy point :");
+    op_point_labale->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
+    op_point_labale->setStyleSheet("color: white; background-color: rgba(0,0,0,0.5); font: 14pt 'Segoe UI'; padding: 5px; border-radius: 8px;");
+    op_point_labale->setGeometry(20, 20, 200, 40);
+    op_point_labale->show();
+}
+
+
 void Poffer::handle_received_cards(QByteArray data) {
     if (waiting_label) {
         waiting_label->hide();
@@ -92,7 +227,6 @@ void Poffer::handle_received_cards(QByteArray data) {
     }
 
     QJsonObject obj = doc.object();
-
 
     QVector<Card> cards;
     QJsonArray card_array = obj["payload"].toObject()["cards"].toArray();
@@ -186,13 +320,6 @@ void Poffer::choose_Card(QVector<Card> c, QString starter, bool a) {
     int startX = (1200 - totalWidth) / 2;
     int y = (700 - cardHeight) / 2;
 
-    QJsonObject payload;
-    QJsonObject mainobject;
-    mainobject["command"] = "select_card";
-    mainobject["payload"] = payload;
-    payload["username"] = username;
-
-
 
     // کارت اول
     QPushButton *button1 = new QPushButton(this);
@@ -285,6 +412,7 @@ void Poffer::choose_Card(QVector<Card> c, QString starter, bool a) {
         button5->hide();
         button6->hide();
         button7->hide();
+        emit card_selected();
     });
 
     // کارت سوم
@@ -477,9 +605,6 @@ void Poffer::choose_Card(QVector<Card> c, QString starter, bool a) {
         });
     }
 
-
-
-
 }
 
 
@@ -597,27 +722,14 @@ Card Poffer::find_card(QString rank , QString suit){
 
 
 
-void Poffer::get_list_card_of_turn() {
-    QJsonObject payload;
-    payload["username"] = username;
-    QJsonObject mainobject;
-    mainobject["command"] = "request_card";
-    mainobject["payload"] = payload;
-
-    QJsonDocument doc(mainobject);
-    client_socket->sendData(doc.toJson(QJsonDocument::Compact));
-
+void Poffer::show_wait() {
     QLabel* label = new QLabel(this);
     label->setText("waiting...........");
     label->setAlignment(Qt::AlignCenter);
     label->setStyleSheet("color: white; background-color: #444; font: 16pt;");
     label->setGeometry(400, 350, 500, 50);
     label->show();
-    waiting_label = label; // ذخیره برای بستن بعدا
-    QTimer::singleShot(1000, this, [=](){
-        QByteArray dummy;
-        handle_received_cards(dummy);
-    });
+    waiting_label = label;
 }
 
 
