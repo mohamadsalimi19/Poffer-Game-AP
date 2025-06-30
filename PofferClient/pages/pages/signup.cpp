@@ -121,7 +121,7 @@ void signup::makejason(){
     QJsonObject payloadObject;
     payloadObject["name"] = name;
     payloadObject["username"] = username;
-    payloadObject["pass"] = pass;
+    payloadObject["password_hash"] = pass;
     payloadObject["lastname"] = lastname;
     payloadObject["gmail"] = gmail;
     payloadObject["phone_number"] = phone_num;
