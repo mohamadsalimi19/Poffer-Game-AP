@@ -7,11 +7,36 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonValue>
+#include"QMessageBox"
+#include"QTimer"
 signup::signup(QWidget *parent)
     : QWidget(parent)
     , ui(new Ui::signup)
 {
+    mysocket = new SocketManager();
+
+    connect(mysocket, &SocketManager::dataReceived, this, &signup::onServerResponse);
     ui->setupUi(this);
+
+}
+
+
+
+
+
+void signup::onServerResponse(QByteArray data) {
+    if (read_jason(data)) {
+        QMessageBox::information(this, "Success", "Signed up successfully!");
+        this->close();
+        Login* l = new Login();
+        this->close();
+        l->show();
+    }
+    else{
+
+        QMessageBox::information(this, "Success", data);
+
+    }
 }
 
 signup::~signup()
@@ -101,7 +126,7 @@ void signup::makejason(){
     payloadObject["gmail"] = gmail;
     payloadObject["phone_number"] = phone_num;
     QJsonObject mainobject;
-    mainobject["Command"] = "signup";
+    mainobject["command"] = "signup";
     mainobject["payload"] = payloadObject;
     QJsonDocument doc(mainobject);
     jason_to_send = doc.toJson(QJsonDocument::Compact);
@@ -139,20 +164,21 @@ void signup::on_pushButton_clicked()
     }
 
     else{
-      //  makejason();
-      // SocketManager* mysocket;
-     //  mysocket->connectToServer("192.168.88.229",80);
-     //  mysocket->sendData(jason_to_send);
-      // QByteArray response = mysocket->get_response();
-       if(1){
-           Login* lp = new Login();
-           this->close();
-           lp->show();
-       }
+       makejason();
+       mysocket->connectToServer("127.0.0.1",8888);
+       mysocket->sendData(jason_to_send);
+
+
+
+
     }
 
 
-}
+    }
+
+
+
+
 
 
 

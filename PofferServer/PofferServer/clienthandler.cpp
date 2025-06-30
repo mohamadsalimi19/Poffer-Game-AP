@@ -79,6 +79,8 @@ void ClientHandler::sendJson(const QJsonObject& json)
 void ClientHandler::processMessage(const QJsonObject& message)
 {
     // exctract command
+
+
     QString command = message["command"].toString();
     if (command.isEmpty()) {
         qWarning() << "Received message with no command.";

@@ -70,7 +70,7 @@ QLabel {
     QVBoxLayout* layout = new QVBoxLayout(this);
 
     layout->addWidget(statue);
-    client_socket->connectToServer("127.0.01",8888);
+    client_socket->connectToServer("127.0.0.1",8888);
     client_socket->sendData(make_requset_json());
 
 

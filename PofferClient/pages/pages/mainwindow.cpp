@@ -12,7 +12,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     ui->setupUi(this);
     QSettings settings("MyCompany", "MyApp");
-   //  signedIn = settings.value("signed_in", false).toBool()
+    signedIn = settings.value("signed_in", false).toBool();
 }
 
 MainWindow::~MainWindow()
@@ -23,11 +23,11 @@ MainWindow::~MainWindow()
 void MainWindow::on_pushButton_clicked()
 {
     signup* sp = new signup();
-    menu* mp = new menu();
+    //menu* mp = new menu();
     this->close();
     //sp->show();
-    mp->show();
-/*
+    //mp->show();
+
     if(!signedIn){
         this->close();
         signup* sp = new signup();
@@ -49,7 +49,7 @@ void MainWindow::on_pushButton_clicked()
 
 
 
-*/
+
 
 
 

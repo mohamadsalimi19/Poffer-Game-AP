@@ -15,6 +15,9 @@ public:
     void connectToServer(QString ip, quint16 port);
     void sendData(const QByteArray &data);
     QByteArray get_response();
+    QTcpSocket * get_socket(){
+        return mySocket;
+    }
 
 signals:
     void connected();

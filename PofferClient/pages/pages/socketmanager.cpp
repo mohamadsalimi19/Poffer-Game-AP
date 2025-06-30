@@ -30,10 +30,8 @@ void SocketManager::onDataRead() {
     QJsonDocument doc = QJsonDocument::fromJson(data);
     QJsonObject mainobj = doc.object();
     auto payload = mainobj["payload"].toObject();
-    emit dataReceived(data);
     response = data;
-    QMessageBox::warning(nullptr,"data",data);
-
+    emit dataReceived(data);
     qDebug() << "Data read:" << data;
 }
 

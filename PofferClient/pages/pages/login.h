@@ -23,13 +23,15 @@ class Login : public QWidget
     QString gmail;
     QString phone_num;
     QByteArray json_to_send;
-
+    SocketManager* mysocket;
 
 public:
     explicit Login(QWidget *parent = nullptr);
     ~Login();
     void make_json();
     bool read_json(QByteArray ar);
+    void onServerResponse(QByteArray data);
+
 
 private slots:
 
@@ -40,6 +42,8 @@ private slots:
     void on_pushButton_clicked();
 
     void on_pushButton_2_clicked();
+
+    void on_pushButton_3_clicked();
 
 private:
     Ui::Login *ui;

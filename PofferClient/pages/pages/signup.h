@@ -10,6 +10,7 @@ class signup;
 class signup : public QWidget
 {
     Q_OBJECT
+    SocketManager* mysocket;
     QString name;
     QString lastname;
     QString username;
@@ -24,6 +25,7 @@ public:
     void makejason();
     void set_filds();
     bool read_jason(QByteArray res);
+    void onServerResponse(QByteArray data);
 
 
 private slots:
@@ -39,6 +41,7 @@ private slots:
 
     void on_lineEdit_6_textChanged(const QString &arg1);
     void on_pushButton_clicked();
+
 
 
 private:

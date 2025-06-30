@@ -3,11 +3,15 @@
 #include<signup.h>
 #include<forgot.h>
 #include<menu.h>
+#include"QTimer"
 Login::Login(QWidget *parent)
     : QWidget(parent)
     , ui(new Ui::Login)
 {
     ui->setupUi(this);
+    mysocket = new SocketManager();
+
+    connect(mysocket, &SocketManager::dataReceived, this, &Login::onServerResponse);
 }
 
 Login::~Login()
@@ -31,6 +35,18 @@ void Login::on_lineEdit_2_textEdited(const QString &arg1)
        pass =hashPasswordSimple(arg1);
 }
 
+void Login::onServerResponse(QByteArray data) {
+    if (read_json(data)) {
+        QMessageBox::information(this, "Success", "Signed up successfully!");
+        this->close();
+        menu* l = new menu();
+        this->close();
+        l->show();
+    }
+    else{
+        QMessageBox::information(this, "Success", data);
+    }
+}
 
 void Login::make_json(){
     QJsonObject playload;
@@ -63,16 +79,12 @@ bool Login::read_json(QByteArray res){
 void Login::on_pushButton_clicked()
 {
 
-    SocketManager* mysocket;
-    //mysocket->connectToServer()
-    //make_json();
-    //mysocket->sendData(json_to_send);
-    if(read_json(mysocket->get_response())){
-        menu* mp = new menu();
-        mp->set(username,name,lastname,gmail,phone_num,pass);
-        this->close();
-        mp->show();
-    }
+    mysocket->connectToServer("127.0.0.1",8888);
+    make_json();
+    mysocket->sendData(json_to_send);
+
+
+
 }
 
 
@@ -81,5 +93,14 @@ void Login::on_pushButton_2_clicked()
     Forgot* fp = new Forgot();
     this->close();
     fp->show();
+}
+
+
+void Login::on_pushButton_3_clicked()
+{
+    signup* s = new signup();
+    s->show();
+    this->close();
+
 }
 
