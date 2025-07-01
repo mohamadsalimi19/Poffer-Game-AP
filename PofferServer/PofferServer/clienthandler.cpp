@@ -66,6 +66,7 @@ void ClientHandler::sendJson(const QJsonObject& json)
     if (m_socket && m_socket->isOpen()) {
         // convet to byte array for send
         QByteArray data = QJsonDocument(json).toJson(QJsonDocument::Compact);
+        data.append('\n');
         m_socket->write(data);
         qDebug() << "Sent to" << m_socketDescriptor << ":" << data;
     }

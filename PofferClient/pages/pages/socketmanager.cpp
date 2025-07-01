@@ -1,5 +1,5 @@
 #include "socketmanager.h"
-#include"QMessageBox";
+#include"QMessageBox"
 #include"QJsonObject"
 SocketManager::SocketManager(QObject *parent)
     : QObject{parent}
@@ -27,14 +27,23 @@ void SocketManager::sendData(const QByteArray &data) {
 }
 
 void SocketManager::onDataRead() {
-    QByteArray data = mySocket->readAll();
-    QMessageBox::warning(nullptr,"deb",data);
-    QJsonDocument doc = QJsonDocument::fromJson(data);
-    QJsonObject mainobj = doc.object();
-    auto payload = mainobj["payload"].toObject();
-    response = data;
-    emit dataReceived(data);
-    qDebug() << "Data read:" << data;
+    buffer.append(mySocket->readAll());
+    while (true) {
+        int endLineIndex = buffer.indexOf('\n');
+        if (endLineIndex == -1)
+            break; // هنوز یک پیام کامل دریافت نشده
+
+        QByteArray jsonData = buffer.left(endLineIndex);
+        buffer = buffer.mid(endLineIndex + 1); // حذف پیام پردازش شده
+
+        QJsonDocument doc = QJsonDocument::fromJson(jsonData);
+        if (!doc.isNull()) {
+            emit dataReceived(jsonData);
+            qDebug() << "Received JSON:" << jsonData;
+        } else {
+            qDebug() << "Invalid JSON received:" << jsonData;
+        }
+    }
 }
 
 void SocketManager::onWritten(qint64 bytes) {

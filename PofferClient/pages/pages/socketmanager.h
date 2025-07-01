@@ -34,6 +34,7 @@ private slots:
 
 private:
     QTcpSocket *mySocket;
+    QByteArray buffer;
 };
 
 #endif // SOCKETMANAGER_H

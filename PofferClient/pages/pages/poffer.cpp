@@ -20,7 +20,7 @@ Poffer::Poffer(SocketManager* socket, QString username, QWidget *parent) :
     ui->setupUi(this);    
     this->setFixedSize(1300, 750);
     get_card();
-    connect(this, &Poffer::turn_showed, this,[=](){
+   /* connect(this, &Poffer::turn_showed, this,[=](){
         QJsonObject payload;
         QJsonObject mainobject;
         mainobject["command"] = "request_card";
@@ -31,8 +31,10 @@ Poffer::Poffer(SocketManager* socket, QString username, QWidget *parent) :
       //  client_socket->sendData(json_to_send);
         show_wait();
     });
+
+*/
     connect(client_socket,&SocketManager::dataReceived,this,&Poffer::onServerResponse);
-    connect(this, &Poffer::card_recived, this, &Poffer::choose_Card);
+    //connect(this, &Poffer::card_recived, this, &Poffer::choose_Card);
     connect(this,&Poffer::card_selected,this,&Poffer::show_wait);
     connect(this,&Poffer::round_result,this,&Poffer::finish_round);
     connect(this,&Poffer::game_over,this,&Poffer::finish_game);
