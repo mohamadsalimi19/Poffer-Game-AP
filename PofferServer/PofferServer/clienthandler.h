@@ -39,7 +39,7 @@ private:
     qintptr m_socketDescriptor; // a pointer
     QTcpSocket* m_socket = nullptr;
     Player* m_player = nullptr;
-    GameSession* m_gameSession = nullptr; // اگر بازیکن در بازی باشد
+    GameSession* m_gameSession = nullptr; // check player in game
 
 public:
     explicit ClientHandler(qintptr socketDescriptor, QObject *parent = nullptr);
