@@ -18,21 +18,50 @@ Card::Suit Card:: getSuit() const{
     return suit;
 }
 
-
+////////////////////////////////////////////////////////
 Card::Rank Card::getRank() const{
     return rank;
 }
 
-
+////////////////////////////////////////////////////////
+QString suitToString(Card::Suit s) {
+    switch (s) {
+    case Card::COIN: return "COIN";
+    case Card::GOLD: return "GOLD";
+    case Card::DOLLAR: return "DOLLAR";
+    case Card::DIAMOND: return "DIAMOND";
+    }
+    return ""; //
+}
+////////////////////////////////////////////////////////
+QString rankToString(Card::Rank r) {
+    switch (r) {
+    case Card::TWO: return "TWO";
+    case Card::THREE: return "THREE";
+    case Card::FOUR: return "FOUR";
+    case Card::FIVE: return "FIVE";
+    case Card::SIX: return "SIX";
+    case Card::SEVEN: return "SEVEN";
+    case Card::EIGHT: return "EIGHT";
+    case Card::NINE: return "NINE";
+    case Card::TEN: return "TEN";
+    case Card::SOLDIER: return "SOLDIER";
+    case Card::QUEEN: return "QUEEN";
+    case Card::KING: return "KING";
+    case Card::BITCOIN: return "BITCOIN";
+    }
+    return ""; // never this happend
+}
+////////////////////////////////////////////////////////
 QJsonObject Card::toJson() const
 {
     QJsonObject cardJson;
-    // convert enum to strign for json
-    cardJson["suit"] = QVariant::fromValue(suit).toString();
-    cardJson["rank"] = QVariant::fromValue(rank).toString();
+
+    cardJson["suit"] = suitToString(suit);
+    cardJson["rank"] = rankToString(rank);
     return cardJson;
 }
-
+////////////////////////////////////////////////////////
 Card Card::fromJson(const QJsonObject& json)
 {
     // convet json to enum

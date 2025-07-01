@@ -37,15 +37,12 @@ void GameManager::playerWantsToPlay(Player* player)
 
 void GameManager::createNewGame(Player* player1, Player* player2)
 {
-    // make a session for 2 player
     GameSession* newSession = new GameSession(player1, player2);
     m_active_games.append(newSession);
 
-    connect(newSession, &GameSession::gameFinished, this, &GameManager::onGameFinished);
-
-    // notifying player for start game
-    player1->getHandler()->startGame(newSession);
-    player2->getHandler()->startGame(newSession);
+    // invoke function more safety for thread
+    QMetaObject::invokeMethod(player1->getHandler(), "startGame", Q_ARG(GameSession*, newSession));
+    QMetaObject::invokeMethod(player2->getHandler(), "startGame", Q_ARG(GameSession*, newSession));
 
     newSession->startNewRound();
 }
