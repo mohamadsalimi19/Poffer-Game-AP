@@ -1,6 +1,5 @@
 #include "signup.h"
 #include "ui_signup.h"
-#include"qmessagebox.h"
 #include <QRegularExpression>
 #include <QCryptographicHash>
 #include<socketmanager.h>
@@ -198,7 +197,6 @@ signup::signup(QWidget *parent)
 
 void signup::onServerResponse(QByteArray data) {
     if (read_jason(data)) {
-        QMessageBox::information(this, "Success", "Signed up successfully!");
         this->close();
         Login* l = new Login();
         this->close();
@@ -206,7 +204,6 @@ void signup::onServerResponse(QByteArray data) {
     }
     else{
 
-        QMessageBox::information(this, "Success", data);
 
     }
 }
@@ -311,7 +308,6 @@ bool signup::read_jason(QByteArray res){
         return true;
     }
     else{
-        QMessageBox::warning(this,"warning",mainobject["message"].toString());
     }
     return false;
 
@@ -321,18 +317,15 @@ void signup::on_pushButton_clicked()
 {
     if(name==""||username==""||pass==""||gmail==""||lastname == ""||phone_num == ""){
 
-        QMessageBox::warning(this,"warning","please enter all filds");
     }
 
     else if(!isValidEmail(gmail)){
 
-        QMessageBox::warning(this,"warning","email is not correct");
 
     }
 
     else if(!isValidIranPhoneNumber(phone_num)){
 
-        QMessageBox::warning(this,"warning","phone num is not correct");
     }
 
     else{

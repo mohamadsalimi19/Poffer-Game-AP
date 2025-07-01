@@ -1,7 +1,6 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include<qdebug.h>
-#include<ostream>
 #include<QSettings>
 #include<socketmanager.h>
 #include<menu.h>

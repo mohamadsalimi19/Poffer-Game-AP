@@ -58,7 +58,6 @@ bool Forgot::read_json(QByteArray res){
         return true;
     }
     else{
-        QMessageBox::warning(this,"warning", playload["message"].toString());
         return false;
     }
 
@@ -76,7 +75,6 @@ void Forgot::on_pushButton_clicked()
 
 void Forgot::onServerResponse(QByteArray data){
     if (read_json(data)) {
-        QMessageBox::information(this, "Success", "Signed up successfully!");
         this->close();
         Login* l = new Login();
         this->close();
@@ -84,7 +82,6 @@ void Forgot::onServerResponse(QByteArray data){
     }
 
     else{
-        QMessageBox::information(this, "eror", data);
     }
 
 

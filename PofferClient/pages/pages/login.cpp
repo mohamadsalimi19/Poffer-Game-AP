@@ -222,7 +222,6 @@ bool Login::read_json(QByteArray res){
         return true;
     }
     else{
-        QMessageBox::warning(this,"warning", payload["message"].toString());
         return false;
     }
 

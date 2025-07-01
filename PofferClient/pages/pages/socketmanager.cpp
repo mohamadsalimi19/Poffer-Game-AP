@@ -20,6 +20,7 @@ void SocketManager::onConnected() {
 
 void SocketManager::sendData(const QByteArray &data) {
         mySocket->write(data);
+    qDebug() << "sended JSON:" << data;
 
 
 }

@@ -73,7 +73,6 @@ bool information::read_json(QByteArray res){
         return true;
     }
     else{
-        QMessageBox::warning(this,"warning",mainobject["message"].toString());
     }
     return false;
 
@@ -121,7 +120,6 @@ bool information::update(){
     mys->sendData(json_to_send);
     auto res = mys->get_response();
     if(read_json(res)){
-        QMessageBox::warning(this,"warning"," your information update succsecfully");
         return true;
     }
     else{
@@ -143,7 +141,6 @@ void information::on_pushButton_6_clicked()
 {
 
     if(newname=="") {
-        QMessageBox::warning(this,"warning","please enter the fild");
         return;
     }
 
@@ -162,7 +159,6 @@ void information::on_lineEdit_4_textEdited(const QString &arg1)
 void information::on_pushButton_3_clicked()
 {
     if(newlastname=="") {
-        QMessageBox::warning(this,"warning","please enter the fild");
         return;
     }
     if(update()){
@@ -185,7 +181,6 @@ void information::on_lineEdit_2_textEdited(const QString &arg1)
 void information::on_pushButton_4_clicked()
 {
     if(newpass=="") {
-        QMessageBox::warning(this,"warning","please enter the fild");
         return;
     }
     if(update()){
@@ -216,7 +211,6 @@ void information::on_pushButton_5_clicked()
     }
 
     else{
-        QMessageBox::warning(this,"warning","your email is wrong");
     }
 
 
@@ -238,7 +232,6 @@ void information::on_pushButton_2_clicked()
         }
     }
     else{
-        QMessageBox::warning(this,"warning","your phone num is wrong");
     }
 
 }
