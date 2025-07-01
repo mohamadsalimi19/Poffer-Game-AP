@@ -12,8 +12,11 @@ class GameManager : public QObject
 {
     Q_OBJECT
 
-private:
+private slots: // <<--- یک بخش جدید برای اسلات‌های خصوصی
     void createNewGame(Player* player1, Player* player2);
+
+private:
+    //void createNewGame(Player* player1, Player* player2);
 
     QList<Player*> m_waiting_lobby;
     QList<GameSession*> m_active_games;

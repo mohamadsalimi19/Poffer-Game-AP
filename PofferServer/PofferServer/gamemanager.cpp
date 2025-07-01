@@ -4,6 +4,7 @@
 #include "clienthandler.h"
 #include <QTimer>
 #include <QDebug>
+#include <QMetaObject>
 /////////////////////////////////////////////////////////////////////////
 GameManager* GameManager::instance()
 {
@@ -30,7 +31,7 @@ void GameManager::playerWantsToPlay(Player* player)
         Player* player2 = m_waiting_lobby.takeFirst();
 
         qDebug() << "Matching" << player1->getUsername() << "and" << player2->getUsername();
-        createNewGame(player1, player2);
+        QMetaObject::invokeMethod(this, "createNewGame", Qt::QueuedConnection,Q_ARG(Player*, player1), Q_ARG(Player*, player2));
     }
 }
 /////////////////////////////////////////////////////////////////////////
