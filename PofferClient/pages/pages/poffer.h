@@ -57,10 +57,11 @@ public:
     void request_card();
     void handle_received_cards(QByteArray data);
     void onServerResponse(QByteArray data);
-    void finish_round(QVector<Card> , QString result ,QString my_hand_rank , QString opponent_hand_rank , QString my_score , QString opponent_score);
+    void finish_round(const QVector<Card>& op_card, const QString& result, const QString& my_hand_rank, const QString& opponent_hand_rank, const QString& my_score, const QString& opponent_score);
     void finish_game(QString result);
     void pause_button();
     void pause_requset();
+    void resetBoardForNewRound();
 
 private slots:
 

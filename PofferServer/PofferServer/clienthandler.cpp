@@ -25,7 +25,7 @@ void ClientHandler::process()
     if (!m_socket->setSocketDescriptor(m_socketDescriptor)) {
         qCritical() << "Could not set socket descriptor:" << m_socket->errorString(); // impotant error
         delete m_socket; // free alocate d memory
-        emit finished(); // به ترد اصلی خبر می‌دهیم که کار ما تمام شد
+        emit finished(); // call main threat our work is end
         return;
     }
 
