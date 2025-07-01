@@ -44,6 +44,9 @@ public:
     // sign up a new playre
     bool signup(const QJsonObject& userData);
 
+    bool updatePlayerProfile(const QString& currentUsername, const QJsonObject& newProfileData);
+
+    Player* getPlayer(const QString& username);
 
 };
 

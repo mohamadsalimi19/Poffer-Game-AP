@@ -99,6 +99,12 @@ void ClientHandler::processMessage(const QJsonObject& message)
     } else if (command == "select_card") {
         handleSelectCard(payload);
     }
+     else if (command == "edit_profile") {
+     handleEditProfile(payload);
+    }
+    else if (command == "request_profile_data") {
+        handleRequestProfileData(payload);
+    }
     // TODO: دستورات دیگر مثل انتخاب کارت و ... را هم اینجا اضافه کن
 }
 //////////////////////////////////////////////////////////////////////////
@@ -244,3 +250,45 @@ ClientHandler::~ClientHandler()
     qDebug() << "ClientHandler for socket" << m_socketDescriptor << "is being destroyed.";
 }
 //////////////////////////////////////////////////////////////////////////
+void ClientHandler::handleEditProfile(const QJsonObject& payload)
+{
+    if (!m_player) return; // اگر کاربر لاگین نکرده، هیچ
+
+    bool success = UserManager::instance()->updatePlayerProfile(m_player->getUsername(), payload);
+
+    QJsonObject response;
+    if (success) {
+        response["response"] = "profile_update_success";
+    } else {
+        response["response"] = "profile_update_error";
+        qDebug() << "invalid change information";
+    }
+    sendJson(response);
+}
+//////////////////////////////////////////////////////////////////////////
+void ClientHandler::handleRequestProfileData(const QJsonObject& /*payload*/)
+{
+    // check player logged in ?
+    if (!m_player) {
+        qWarning() << "Profile data requested by an unauthenticated user.";
+
+        // send error message
+        QJsonObject errorResponse;
+        errorResponse["response"] = "error";
+        QJsonObject errorPayload;
+        errorPayload["message"] = "User not authenticated. Please login again.";
+        errorResponse["payload"] = errorPayload;
+        sendJson(errorResponse);
+        return;
+    }
+
+    qDebug() << "Profile data requested by" << m_player->getUsername() << ". Sending data...";
+
+    // make json
+    QJsonObject response;
+    response["response"] = "profile_data_response";
+
+    response["payload"] = m_player->toJson();
+
+    sendJson(response);
+}
