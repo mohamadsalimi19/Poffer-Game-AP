@@ -133,7 +133,7 @@ void GameSession::playerSelectedCard(Player* player, const Card& selectedCard)
             qDebug() << "All drafting rounds are complete. Evaluating hands...";
             evaluateAndFinishRound();
         } else {
-            m_currentPlayerForDraft = (m_currentPlayerForDraft == m_player1) ? m_player2 : m_player1;
+            //m_currentPlayerForDraft = (m_currentPlayerForDraft == m_player1) ? m_player2 : m_player1; incorrect code
             // next mini round
             startDraftingPhase();
         }
@@ -181,8 +181,32 @@ void GameSession::playerSelectedCard(Player* player, const Card& selectedCard)
         startNewRound();
     }
 }*/
-
 ///////////////////////////**********///////////////////////////////
+/// \brief rankToString
+/// \param rank
+/// \return
+/// helping function to evaluateAndFinishRound
+QString rankToString(HandEvaluator::HandRank rank)
+{
+    switch (rank) {
+    case HandEvaluator::INVALID_HAND:      return "INVALID_HAND";
+    case HandEvaluator::MESSY_HAND:        return "MESSY_HAND";
+    case HandEvaluator::SINGLE_PAIR:      return "SINGLE_PAIR";
+    case HandEvaluator::DOUBLE_PAIR:      return "DOUBLE_PAIR";
+    case HandEvaluator::THREE_OF_A_KIND: return "THREE_OF_A_KIND";
+    case HandEvaluator::SERIES:            return "SERIES";
+    case HandEvaluator::MSC_HAND:          return "MSC_HAND";
+    case HandEvaluator::PENTHOUSE:       return "PENTHOUSE";
+    case HandEvaluator::FOUR_OF_A_KIND:  return "FOUR_OF_A_KIND";
+    case HandEvaluator::ORDER_HAND:        return "ORDER_HAND";
+    case HandEvaluator::GOLDEN_HAND:       return "GOLDEN_HAND";
+    default:                               return "UNKNOWN";
+    }
+}
+///////////////////////////**********///////////////////////////////
+/// \brief GameSession::evaluateAndFinishRound
+/// \return
+///
 Player* GameSession::evaluateAndFinishRound(){
     Player* winner = nullptr;
     // calculate winner
@@ -211,17 +235,48 @@ Player* GameSession::evaluateAndFinishRound(){
         qDebug() << "The round is a draw!";
     }
 
-    // TODO: یک پیام "round_result" به هر دو کلاینت بفرست
-    // این پیام باید شامل نتیجه، امتیازات جدید و دست حریف باشد
+    QJsonArray hand1_json_array, hand2_json_array;
+    for(const auto& card : m_player1_hand.getCards()) { hand1_json_array.append(card.toJson()); }
+    for(const auto& card : m_player2_hand.getCards()) { hand2_json_array.append(card.toJson()); }
 
-    // چک کردن پایان بازی
-    if (m_player1_score >= 2 || m_player2_score >= 2) {
-        qDebug() << "Game Over!";
-        // TODO: پیام "game_over" را به هر دو کلاینت بفرست
+    // make json player 1
+    QJsonObject payload1;
+    payload1["result"] = (winner == m_player1) ? "won" : (winner == m_player2) ? "lost" : "draw";
+    payload1["my_hand_rank"] = rankToString(rank1); // نیاز به تابع کمکی rankToString داریم
+    payload1["opponent_hand_rank"] = rankToString(rank2);
+    payload1["opponent_hand"] = hand2_json_array;
+    payload1["my_score"] = m_player1_score;
+    payload1["opponent_score"] = m_player2_score;
+    QJsonObject response1;
+    response1["response"] = "round_result";
+    response1["payload"] = payload1;
+    emit sendMessageToPlayer(m_player1, response1);
+
+    // make json playre 2
+    QJsonObject payload2;
+    payload2["result"] = (winner == m_player2) ? "won" : (winner == m_player1) ? "lost" : "draw";
+    payload2["my_hand_rank"] = rankToString(rank2);
+    payload2["opponent_hand_rank"] = rankToString(rank1);
+    payload2["opponent_hand"] = hand1_json_array;
+    payload2["my_score"] = m_player2_score;
+    payload2["opponent_score"] = m_player1_score;
+    QJsonObject response2;
+    response2["response"] = "round_result";
+    response2["payload"] = payload2;
+    emit sendMessageToPlayer(m_player2, response2);
+
+
+
+    // checking end game
+    if (m_player1_score >= 2) {
+        endGame(m_player1, "Won 2 rounds.");
+    } else if (m_player2_score >= 2) {
+        endGame(m_player2, "Won 2 rounds.");
     } else {
-        // شروع راند بعدی
-        startNewRound();
+        // wait 5 sec
+        QTimer::singleShot(5000, this, &GameSession::startNewRound);
     }
+
 
     return winner;
 }
