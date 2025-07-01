@@ -63,20 +63,18 @@ void GameSession::startNewRound()
     startDraftingPhase();
 }
 //////////////////////////////////////////////////////////////////////////////////////////
-void GameSession::startDraftingPhase(){
-    try{
-            qDebug() << "Drafting phase has started...";
-            m_draftPool.clear();
+void GameSession::startDraftingPhase()
+{
+    qDebug() << "Starting a new mini-draft...";
+    m_draftPool.clear();
+    m_isFirstPickInMiniRound = true; // every mini round start with 7 card
 
-            for (int i = 0; i < 7; ++i) {
-                m_draftPool.append(m_deck.deal());
-            }
+    for (int i = 0; i < 7; ++i) {
+        if(m_deck.cardCount() > 0) //checking for not empty
+            m_draftPool.append(m_deck.deal());
+    }
 
-            sendDraftPoolToCurrentPlayer();
-    }
-    catch(const GameSession_exception& err){
-        err.outputOnDebug();
-    }
+    sendDraftPoolToCurrentPlayer();
 }
 //////////////////////////////////////////////////////////////////////////////////////////
 /// send draft pool to players and then choose player suitable card
@@ -94,7 +92,7 @@ void GameSession::sendDraftPoolToCurrentPlayer()
     response["response"] = "select_card_request";
     response["payload"] = payload;
 
-    // به جای ارسال مستقیم، فقط سیگنال می‌دهیم
+    // send signal
     emit sendMessageToPlayer(m_currentPlayerForDraft, response);
 }
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -104,40 +102,42 @@ void GameSession::sendDraftPoolToCurrentPlayer()
 ///while a player select a card this function has been run
 void GameSession::playerSelectedCard(Player* player, const Card& selectedCard)
 {
-    // checking turn player
     if (player != m_currentPlayerForDraft) {
         qWarning() << "Received card selection from" << player->getUsername() << "but it's not their turn.";
         return;
     }
 
-    // deleting selected card from draft pool
     bool card_removed = m_draftPool.removeOne(selectedCard);
     if (!card_removed) {
         qWarning() << "Player" << player->getUsername() << "selected a card that is not in the draft pool.";
         return;
     }
 
-    // adding card to player hand
-    if (player == m_player1) {
-        m_player1_hand.addCard(selectedCard);
-    } else {
-        m_player2_hand.addCard(selectedCard);
-    }
+    // add card to player hand
+    if (player == m_player1) m_player1_hand.addCard(selectedCard);
+    else m_player2_hand.addCard(selectedCard);
+
     qDebug() << player->getUsername() << "selected a card. Their hand size is now:" << (player == m_player1 ? m_player1_hand.getCards().size() : m_player2_hand.getCards().size());
 
-    // checking if player hands is full , start evaluating
-    if (m_player1_hand.getCards().size() == 5 && m_player2_hand.getCards().size() == 5) {
-        qDebug() << "Drafting phase is complete. Evaluating hands...";
-        evaluateAndFinishRound();
-        return;
+    if (m_isFirstPickInMiniRound) {
+        // if first select?
+        m_isFirstPickInMiniRound = false; // now turn player 2
+        m_currentPlayerForDraft = (m_currentPlayerForDraft == m_player1) ? m_player2 : m_player1;
+        sendDraftPoolToCurrentPlayer();
+    } else {
+        // is second select ? end mini round
+        qDebug() << "Mini-draft finished.";
+
+        // checking full hand?
+        if (m_player1_hand.getCards().size() >= 5) {
+            qDebug() << "All drafting rounds are complete. Evaluating hands...";
+            evaluateAndFinishRound();
+        } else {
+            m_currentPlayerForDraft = (m_currentPlayerForDraft == m_player1) ? m_player2 : m_player1;
+            // next mini round
+            startDraftingPhase();
+        }
     }
-
-    // update turn
-    m_currentPlayerForDraft = (m_currentPlayerForDraft == m_player1) ? m_player2 : m_player1;
-    qDebug() << "It is now" << m_currentPlayerForDraft->getUsername() << "'s turn to draft.";
-
-    //  pass other cards to next player
-    sendDraftPoolToCurrentPlayer();
 }
 //////////////////////////////////////////////////////////////////////////////////////////
 /*oid GameSession::evaluateAndFinishRound()

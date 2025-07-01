@@ -63,3 +63,8 @@ Card Deck::dealDiamondCard()
    // if don't find ---> never happend this situation
     return deal();
 }
+
+
+int Deck::cardCount() const {
+    return m_cards.size();
+}
