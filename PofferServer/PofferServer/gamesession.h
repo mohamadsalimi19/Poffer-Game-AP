@@ -78,6 +78,7 @@ public:
 
 signals:
     void gameFinished(GameSession* session);
+    void sendMessageToPlayer(Player* player, const QJsonObject& message);
 
 };
 

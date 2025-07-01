@@ -44,13 +44,14 @@ public:
     virtual ~ClientHandler();
     //Notifying the client to start the game
     //void startGame(GameSession* session);
-    void sendJson(const QJsonObject& json);
+    //void sendJson(const QJsonObject& json);
 
 public slots:
     void process(); // main function that
     void onReadyRead();
     void onDisconnected();
     void startGame(GameSession* session);
+    void sendJson(const QJsonObject& json);
 
 signals:
     void finished();

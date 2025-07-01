@@ -35,6 +35,7 @@ public:
 
 public slots:
     void onGameFinished(GameSession* session);
+    void onSendMessageToPlayer(Player* player, const QJsonObject& message);
 
 };
 

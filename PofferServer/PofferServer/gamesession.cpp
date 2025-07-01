@@ -84,25 +84,19 @@ void GameSession::startDraftingPhase(){
 void GameSession::sendDraftPoolToCurrentPlayer()
 {
     qDebug() << "Sending" << m_draftPool.size() << "cards to" << m_currentPlayerForDraft->getUsername();
-
-    // for save all card make a array json
     QJsonArray cardsArray;
     for (const Card& card : m_draftPool) {
         cardsArray.append(card.toJson());
     }
-
-    // final message
     QJsonObject payload;
     payload["cards"] = cardsArray;
-
     QJsonObject response;
     response["response"] = "select_card_request";
     response["payload"] = payload;
 
-    // send message
-    m_currentPlayerForDraft->getHandler()->sendJson(response);
+    // به جای ارسال مستقیم، فقط سیگنال می‌دهیم
+    emit sendMessageToPlayer(m_currentPlayerForDraft, response);
 }
-
 //////////////////////////////////////////////////////////////////////////////////////////
 /// \brief GameSession::playerSelectedCard
 /// \param player
@@ -454,14 +448,14 @@ void GameSession::endGame(Player* winner, const QString& reason)
 {
     qDebug() << "Game is ending. Winner:" << (winner ? winner->getUsername() : "None (Draw)") << "Reason:" << reason;
 
-    // find loser
+    // پیدا کردن بازنده (اگر برنده‌ای وجود داشته باشد)
     Player* loser = nullptr;
     if (winner) {
         loser = (winner == m_player1) ? m_player2 : m_player1;
     }
 
-    // create message for winner
-    if (winner && winner->getHandler()) {
+    // --- ساخت و درخواست ارسال پیام برای برنده ---
+    if (winner) {
         QJsonObject payload_win;
         payload_win["result"] = "You Won!";
         payload_win["reason"] = reason;
@@ -469,10 +463,13 @@ void GameSession::endGame(Player* winner, const QString& reason)
         QJsonObject response_win;
         response_win["response"] = "game_over";
         response_win["payload"] = payload_win;
-        winner->getHandler()->sendJson(response_win);
+
+        // درخواست ارسال پیام به برنده
+        emit sendMessageToPlayer(winner, response_win);
     }
-    // create message for loser
-    if (loser && loser->getHandler()) {
+
+    // --- ساخت و درخواست ارسال پیام برای بازنده ---
+    if (loser) {
         QJsonObject payload_lose;
         payload_lose["result"] = "You Lost!";
         payload_lose["reason"] = reason;
@@ -480,10 +477,20 @@ void GameSession::endGame(Player* winner, const QString& reason)
         QJsonObject response_lose;
         response_lose["response"] = "game_over";
         response_lose["payload"] = payload_lose;
-        loser->getHandler()->sendJson(response_lose);
+
+        // درخواست ارسال پیام به بازنده
+        emit sendMessageToPlayer(loser, response_lose);
     }
 
-    // finished game
+    // --- مرحله نهایی: اعلام پایان کار به GameManager ---
+    // این سیگنال باید در انتهای تابع باشد
     emit gameFinished(this);
 }
 //////////////////////////////////////////////////////////////////////////////////////////
+void GameManager::onSendMessageToPlayer(Player* player, const QJsonObject& message)
+{
+    if (player && player->getHandler()) {
+        // از invokeMethod استفاده می‌کنیم تا sendJson به صورت امن در ترد صحیح اجرا شود
+        QMetaObject::invokeMethod(player->getHandler(), "sendJson", Qt::QueuedConnection,Q_ARG(QJsonObject, message));
+    }
+}

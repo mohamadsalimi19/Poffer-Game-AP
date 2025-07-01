@@ -35,16 +35,24 @@ void GameManager::playerWantsToPlay(Player* player)
     }
 }
 /////////////////////////////////////////////////////////////////////////
-
 void GameManager::createNewGame(Player* player1, Player* player2)
 {
+    // ۱. یک جلسه بازی جدید برای این دو بازیکن می‌سازیم.
     GameSession* newSession = new GameSession(player1, player2);
     m_active_games.append(newSession);
+    qDebug() << "Game session created for" << player1->getUsername() << "and" << player2->getUsername();
 
-    // invoke function more safety for thread
-    QMetaObject::invokeMethod(player1->getHandler(), "startGame", Q_ARG(GameSession*, newSession));
-    QMetaObject::invokeMethod(player2->getHandler(), "startGame", Q_ARG(GameSession*, newSession));
+    // ۲. سیگنال‌های جلسه بازی را به اسلات‌های مدیر بازی وصل می‌کنیم.
+    // این کار برای مدیریت پیام‌ها و پاک کردن حافظه بعد از پایان بازی ضروری است.
+    connect(newSession, &GameSession::gameFinished, this, &GameManager::onGameFinished);
+    connect(newSession, &GameSession::sendMessageToPlayer, this, &GameManager::onSendMessageToPlayer);
 
+    // ۳. به صورت امن، به هر دو بازیکن خبر می‌دهیم که بازی شروع شده است.
+    // QueuedConnection تضمین می‌کند که این توابع در ترد صحیح خودشان اجرا شوند.
+    QMetaObject::invokeMethod(player1->getHandler(), "startGame", Qt::QueuedConnection, Q_ARG(GameSession*, newSession));
+    QMetaObject::invokeMethod(player2->getHandler(), "startGame", Qt::QueuedConnection, Q_ARG(GameSession*, newSession));
+
+    // ۴. راند اول بازی را استارت می‌زنیم.
     newSession->startNewRound();
 }
 /////////////////////////////////////////////////////////////////////////
