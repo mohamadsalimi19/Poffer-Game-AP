@@ -7,7 +7,6 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonValue>
-#include"QMessageBox"
 #include"QTimer"
 #include"QPainter"
 signup::signup(QWidget *parent)

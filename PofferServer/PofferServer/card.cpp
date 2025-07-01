@@ -80,15 +80,17 @@ Card Card::fromJson(const QJsonObject& json)
     Rank rank = TWO;
     if (rankStr == "THREE") rank = THREE;
     else if (rankStr == "FOUR") rank = FOUR;
-    else if (rankStr == "FOUR") rank = FIVE;
-    else if (rankStr == "FOUR") rank = SIX;
-    else if (rankStr == "FOUR") rank = SEVEN;
-    else if (rankStr == "FOUR") rank = EIGHT;
-    else if (rankStr == "FOUR") rank = NINE;
-    else if (rankStr == "FOUR") rank = TEN;
-    else if (rankStr == "FOUR") rank = SOLDIER;
-    else if (rankStr == "FOUR") rank = QUEEN;
+    else if (rankStr == "FIVE") rank = FIVE;
+    else if (rankStr == "SIX") rank = SIX;
+    else if (rankStr == "SEVEN") rank = SEVEN;
+    else if (rankStr == "EIGHT") rank = EIGHT;
+    else if (rankStr == "NINE") rank = NINE;
+    else if (rankStr == "TEN") rank = TEN;
+    else if (rankStr == "SOLDIER") rank = SOLDIER;
+    else if (rankStr == "QUEEN") rank = QUEEN;
     else if (rankStr == "BITCOIN") rank = BITCOIN;
+    else if (rankStr == "BITCOIN") rank = KING;
+
 
     return Card(suit, rank);
 }

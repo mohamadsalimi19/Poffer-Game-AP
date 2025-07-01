@@ -1,5 +1,4 @@
 #include "socketmanager.h"
-#include"QMessageBox"
 #include"QJsonObject"
 SocketManager::SocketManager(QObject *parent)
     : QObject{parent}
@@ -16,7 +15,6 @@ void SocketManager::connectToServer(QString ip, quint16 port) {
 }
 
 void SocketManager::onConnected() {
-    QMessageBox::warning(nullptr,"con","connected");
     emit connected();
 }
 

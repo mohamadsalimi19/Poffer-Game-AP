@@ -5,7 +5,6 @@
 #include<socketmanager.h>
 #include<QJsonDocument>
 #include <QJsonObject>
-#include<QMessageBox>
 #include<signup.h>
 #include<menu.h>
 information::information(QWidget *parent)

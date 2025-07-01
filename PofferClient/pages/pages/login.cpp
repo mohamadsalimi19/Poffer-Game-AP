@@ -188,7 +188,7 @@ void Login::on_lineEdit_2_textEdited(const QString &arg1)
 
 void Login::onServerResponse(QByteArray data) {
     if (read_json(data)) {
-        QMessageBox::information(this, "Success", "Login up successfully!");
+       // QMessageBox::information(this, "Success", "Login up successfully!");
         this->close();
         menu* l = new menu();
         l->set(username,name,lastname,gmail,phone_num,pass,mysocket);
@@ -196,7 +196,7 @@ void Login::onServerResponse(QByteArray data) {
         l->show();
     }
     else{
-        QMessageBox::information(this, "Success", data);
+       // QMessageBox::information(this, "Success", data);
     }
 }
 

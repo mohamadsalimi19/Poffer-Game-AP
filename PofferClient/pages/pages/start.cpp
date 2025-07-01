@@ -1,7 +1,6 @@
 #include "start.h"
 #include "ui_start.h"
 #include<QJsonObject>
-#include<QMessageBox>
 #include<QLabel>
 #include<QVBoxLayout>
 #include<QTimer>

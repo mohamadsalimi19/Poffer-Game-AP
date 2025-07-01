@@ -1,6 +1,5 @@
 #include "poffer.h"
 #include "ui_poffer.h"
-#include"QMessageBox"
 #include"QDebug"
 #include"QPainter"
 #include"QTimer"
@@ -15,7 +14,7 @@ Poffer::Poffer(SocketManager* socket, QString username, QWidget *parent) :
     ui(new Ui::Poffer),
     client_socket(socket), // دریافت و نگه‌داری
     username(username),
-    round{1}
+    round{0}
 {
     ui->setupUi(this);    
     this->setFixedSize(1300, 750);
@@ -33,8 +32,8 @@ Poffer::Poffer(SocketManager* socket, QString username, QWidget *parent) :
     });
 
 */
-    //connect(client_socket,&SocketManager::dataReceived,this,&Poffer::onServerResponse);
-    //connect(this, &Poffer::card_recived, this, &Poffer::choose_Card);
+    connect(client_socket,&SocketManager::dataReceived,this,&Poffer::onServerResponse);
+    connect(this, &Poffer::card_recived, this, &Poffer::choose_Card);
     connect(this,&Poffer::card_selected,this,&Poffer::show_wait);
     connect(this,&Poffer::round_result,this,&Poffer::finish_round);
     connect(this,&Poffer::game_over,this,&Poffer::finish_game);
@@ -125,29 +124,32 @@ void Poffer::finish_round(QVector<Card> op_card,  QString result,QString my_hand
 
 
 void Poffer::onServerResponse(QByteArray data){
+    /*
     if (waiting_label) {
         waiting_label->hide();
         waiting_label->deleteLater();
         waiting_label = nullptr;
     }
+*/
     QJsonDocument doc = QJsonDocument::fromJson(data);
     if (doc.isNull()) {
-        QMessageBox::warning(this, "خطا", "داده از سرور خراب است.");
+        //QMessageBox::warning(this, "خطا", "داده از سرور خراب است.");
         return;
     }
     QJsonObject obj = doc.object();
 
 
     if (obj["response"].toString()=="select_card_request"){
+        //QMessageBox::warning(this,"card" , "card omad");
         QVector<Card> cards;
         QJsonArray card_array = obj["payload"].toObject()["cards"].toArray();
         for (auto val : card_array) {
             auto c = val.toObject();
             QString suit = c["suit"].toString();
             QString rank = c["rank"].toString();
-            //auto t = find_card(rank,suit);
+            auto t = find_card(rank,suit);
             //  qDebug()<<t.rank;
-            //cards.push_back(find_card(rank, suit));
+            cards.push_back(find_card(rank, suit));
         }
         emit card_recived(cards, username, true);
     }
@@ -252,7 +254,7 @@ void Poffer::handle_received_cards(QByteArray data) {
 )";
     QJsonDocument doc = QJsonDocument::fromJson(test_json);
     if (doc.isNull()) {
-        QMessageBox::warning(this, "خطا", "داده از سرور خراب است.");
+        //QMessageBox::warning(this, "خطا", "داده از سرور خراب است.");
         return;
     }
 
@@ -377,22 +379,32 @@ void Poffer::choose_Card(QVector<Card> c, QString starter, bool a) {
     button1->show();
     animation(pos_1 , button1);
     connect(button1, &QPushButton::clicked, this, [=]() {
-        QMessageBox::information(this, "Card Selected", "You selected: " + c[0].rank + " of " + c[0].suit);
+        //QMessageBox::information(this, "Card Selected", "You selected: " + c[0].rank + " of " + c[0].suit);
+        // ساختن آبجکت کارت انتخاب‌شده
+        QJsonObject selected_card;
+        selected_card["rank"] = c[0].rank;
+        selected_card["suit"] = c[0].suit;
+
+        // ساختن payload
         QJsonObject payload;
-        payload["username"] = username;
-        payload["suit"] = c[0].suit;
-        payload["rank"] = c[0].rank;
-        myhand.push_back(c[0]);
+        payload["selected_card"] = selected_card;
+
+        // ساختن mainobject
         QJsonObject mainobject;
         mainobject["command"] = "select_card";
         mainobject["payload"] = payload;
+
+        // ست کردن آیکن کارت
+        myhand.push_back(c[0]);
         player_cards_place[round]->setIcon(c[0].imagePath);
         player_cards_place[round]->setIconSize(QSize(cardWidth, cardHeight));
-        QJsonDocument doc(mainobject);
-        QByteArray json_to_send = doc.toJson(QJsonDocument::Compact);
 
-        // ارسال به سرور
-        client_socket->sendData(json_to_send);
+        // ساختن JSON و آماده‌سازی برای ارسال
+        QJsonDocument doc(mainobject);
+        QByteArray json_to_send = doc.toJson(QJsonDocument::Indented);
+
+        // ارسال
+        client_socket->sendData(json_to_send); // برای جلوگیری از چسبیدن پیام‌ها
         button1->hide();
         button2->hide();
         button3->hide();
@@ -400,6 +412,7 @@ void Poffer::choose_Card(QVector<Card> c, QString starter, bool a) {
         button5->hide();
         button6->hide();
         button7->hide();
+        emit(card_selected());
 
 
     });
@@ -418,23 +431,31 @@ void Poffer::choose_Card(QVector<Card> c, QString starter, bool a) {
     button2->show();
     animation(pos_2 , button2);
     connect(button2, &QPushButton::clicked, this, [=]() {
-        QMessageBox::information(this, "Card Selected", "You selected: " + c[1].rank + " of " + c[1].suit);
-        QJsonObject payload;
-        payload["username"] = username;
-        payload["suit"] = c[1].suit;
-        payload["rank"] = c[1].rank;
-        myhand.push_back(c[1]);
+        //QMessageBox::information(this, "Card Selected", "You selected: " + c[1].rank + " of " + c[1].suit);
+        QJsonObject selected_card;
+        selected_card["rank"] = c[1].rank;
+        selected_card["suit"] = c[1].suit;
 
+        // ساختن payload
+        QJsonObject payload;
+        payload["selected_card"] = selected_card;
+
+        // ساختن mainobject
         QJsonObject mainobject;
         mainobject["command"] = "select_card";
         mainobject["payload"] = payload;
+
+        // ست کردن آیکن کارت
+        myhand.push_back(c[1]);
         player_cards_place[round]->setIcon(c[1].imagePath);
         player_cards_place[round]->setIconSize(QSize(cardWidth, cardHeight));
-        QJsonDocument doc(mainobject);
-        QByteArray json_to_send = doc.toJson(QJsonDocument::Compact);
 
-        // ارسال به سرور
-        client_socket->sendData(json_to_send);
+        // ساختن JSON و آماده‌سازی برای ارسال
+        QJsonDocument doc(mainobject);
+        QByteArray json_to_send = doc.toJson(QJsonDocument::Indented);
+
+        // ارسال
+        client_socket->sendData(json_to_send); // برای جلوگیری از چسبیدن پیام‌ها
         button1->hide();
         button2->hide();
         button3->hide();
@@ -457,23 +478,31 @@ void Poffer::choose_Card(QVector<Card> c, QString starter, bool a) {
     button3->show();
     animation(pos_3 , button3);
     connect(button3, &QPushButton::clicked, this, [=]() {
-        QMessageBox::information(this, "Card Selected", "You selected: " + c[2].rank + " of " + c[2].suit);
-        QJsonObject payload;
-        payload["username"] = username;
-        payload["suit"] = c[2].suit;
-        payload["rank"] = c[2].rank;
-        myhand.push_back(c[2]);
+       // QMessageBox::information(this, "Card Selected", "You selected: " + c[2].rank + " of " + c[2].suit);
+        QJsonObject selected_card;
+        selected_card["rank"] = c[2].rank;
+        selected_card["suit"] = c[2].suit;
 
+        // ساختن payload
+        QJsonObject payload;
+        payload["selected_card"] = selected_card;
+
+        // ساختن mainobject
         QJsonObject mainobject;
         mainobject["command"] = "select_card";
         mainobject["payload"] = payload;
+
+        // ست کردن آیکن کارت
+        myhand.push_back(c[2]);
         player_cards_place[round]->setIcon(c[2].imagePath);
         player_cards_place[round]->setIconSize(QSize(cardWidth, cardHeight));
-        QJsonDocument doc(mainobject);
-        QByteArray json_to_send = doc.toJson(QJsonDocument::Compact);
 
-        // ارسال به سرور
-        client_socket->sendData(json_to_send);
+        // ساختن JSON و آماده‌سازی برای ارسال
+        QJsonDocument doc(mainobject);
+        QByteArray json_to_send = doc.toJson(QJsonDocument::Indented);
+
+        // ارسال
+        client_socket->sendData(json_to_send); // برای جلوگیری از چسبیدن پیام‌ها
         button1->hide();
         button2->hide();
         button3->hide();
@@ -481,6 +510,8 @@ void Poffer::choose_Card(QVector<Card> c, QString starter, bool a) {
         button5->hide();
         button6->hide();
         button7->hide();
+        emit(card_selected());
+
     });
 
     // کارت چهارم
@@ -495,23 +526,31 @@ void Poffer::choose_Card(QVector<Card> c, QString starter, bool a) {
     button4->show();
     animation(pos_4 , button4);
     connect(button4, &QPushButton::clicked, this, [=]() {
-        QMessageBox::information(this, "Card Selected", "You selected: " + c[3].rank + " of " + c[3].suit);
-        QJsonObject payload;
-        payload["username"] = username;
-        payload["suit"] = c[3].suit;
-        payload["rank"] = c[3].rank;
-        myhand.push_back(c[3]);
+      //  QMessageBox::information(this, "Card Selected", "You selected: " + c[3].rank + " of " + c[3].suit);
+        QJsonObject selected_card;
+        selected_card["rank"] = c[3].rank;
+        selected_card["suit"] = c[3].suit;
 
+        // ساختن payload
+        QJsonObject payload;
+        payload["selected_card"] = selected_card;
+
+        // ساختن mainobject
         QJsonObject mainobject;
         mainobject["command"] = "select_card";
         mainobject["payload"] = payload;
+
+        // ست کردن آیکن کارت
+        myhand.push_back(c[3]);
         player_cards_place[round]->setIcon(c[3].imagePath);
         player_cards_place[round]->setIconSize(QSize(cardWidth, cardHeight));
-        QJsonDocument doc(mainobject);
-        QByteArray json_to_send = doc.toJson(QJsonDocument::Compact);
 
-        // ارسال به سرور
-        client_socket->sendData(json_to_send);
+        // ساختن JSON و آماده‌سازی برای ارسال
+        QJsonDocument doc(mainobject);
+        QByteArray json_to_send = doc.toJson(QJsonDocument::Indented);
+
+        // ارسال
+        client_socket->sendData(json_to_send); // برای جلوگیری از چسبیدن پیام‌ها
         button1->hide();
         button2->hide();
         button3->hide();
@@ -519,6 +558,8 @@ void Poffer::choose_Card(QVector<Card> c, QString starter, bool a) {
         button5->hide();
         button6->hide();
         button7->hide();
+        emit(card_selected());
+
     });
 
     // کارت پنجم
@@ -533,23 +574,31 @@ void Poffer::choose_Card(QVector<Card> c, QString starter, bool a) {
     button5->show();
     animation(pos_5 , button5);
     connect(button5, &QPushButton::clicked, this, [=]() {
-        QMessageBox::information(this, "Card Selected", "You selected: " + c[4].rank + " of " + c[4].suit);
+       // QMessageBox::information(this, "Card Selected", "You selected: " + c[4].rank + " of " + c[4].suit);
+        QJsonObject selected_card;
+        selected_card["rank"] = c[4].rank;
+        selected_card["suit"] = c[4].suit;
+
+        // ساختن payload
         QJsonObject payload;
-        payload["username"] = username;
-        payload["suit"] = c[4].suit;
-        payload["rank"] = c[4].rank;
-        myhand.push_back(c[4]);
-        player_cards_place[round]->setIcon(c[4].imagePath);
-        player_cards_place[round]->setIconSize(QSize(cardWidth, cardHeight));
+        payload["selected_card"] = selected_card;
+
+        // ساختن mainobject
         QJsonObject mainobject;
         mainobject["command"] = "select_card";
         mainobject["payload"] = payload;
 
-        QJsonDocument doc(mainobject);
-        QByteArray json_to_send = doc.toJson(QJsonDocument::Compact);
+        // ست کردن آیکن کارت
+        myhand.push_back(c[4]);
+        player_cards_place[round]->setIcon(c[4].imagePath);
+        player_cards_place[round]->setIconSize(QSize(cardWidth, cardHeight));
 
-        // ارسال به سرور
-        client_socket->sendData(json_to_send);
+        // ساختن JSON و آماده‌سازی برای ارسال
+        QJsonDocument doc(mainobject);
+        QByteArray json_to_send = doc.toJson(QJsonDocument::Indented);
+
+        // ارسال
+        client_socket->sendData(json_to_send); // برای جلوگیری از چسبیدن پیام‌ها
         button1->hide();
         button2->hide();
         button3->hide();
@@ -557,6 +606,8 @@ void Poffer::choose_Card(QVector<Card> c, QString starter, bool a) {
         button5->hide();
         button6->hide();
         button7->hide();
+        emit(card_selected());
+
     });
 
     // کارت ششم
@@ -571,23 +622,31 @@ void Poffer::choose_Card(QVector<Card> c, QString starter, bool a) {
     button6->show();
     animation(pos_6 , button6);
     connect(button6, &QPushButton::clicked, this, [=]() {
-        QMessageBox::information(this, "Card Selected", "You selected: " + c[5].rank + " of " + c[5].suit);
+      //  QMessageBox::information(this, "Card Selected", "You selected: " + c[5].rank + " of " + c[5].suit);
+        QJsonObject selected_card;
+        selected_card["rank"] = c[5].rank;
+        selected_card["suit"] = c[5].suit;
+
+        // ساختن payload
         QJsonObject payload;
-        payload["username"] = username;
-        payload["suit"] = c[5].suit;
-        payload["rank"] = c[5].rank;
-        myhand.push_back(c[5]);
-        player_cards_place[round]->setIcon(c[5].imagePath);
-        player_cards_place[round]->setIconSize(QSize(cardWidth, cardHeight));
+        payload["selected_card"] = selected_card;
+
+        // ساختن mainobject
         QJsonObject mainobject;
         mainobject["command"] = "select_card";
         mainobject["payload"] = payload;
 
-        QJsonDocument doc(mainobject);
-        QByteArray json_to_send = doc.toJson(QJsonDocument::Compact);
+        // ست کردن آیکن کارت
+        myhand.push_back(c[5]);
+        player_cards_place[round]->setIcon(c[5].imagePath);
+        player_cards_place[round]->setIconSize(QSize(cardWidth, cardHeight));
 
-        // ارسال به سرور
-        client_socket->sendData(json_to_send);
+        // ساختن JSON و آماده‌سازی برای ارسال
+        QJsonDocument doc(mainobject);
+        QByteArray json_to_send = doc.toJson(QJsonDocument::Indented);
+
+        // ارسال
+        client_socket->sendData(json_to_send); // برای جلوگیری از چسبیدن پیام‌ها
         button1->hide();
         button2->hide();
         button3->hide();
@@ -595,6 +654,8 @@ void Poffer::choose_Card(QVector<Card> c, QString starter, bool a) {
         button5->hide();
         button6->hide();
         button7->hide();
+        emit(card_selected());
+
     });
 
     if(c.size()>6){
@@ -609,22 +670,33 @@ void Poffer::choose_Card(QVector<Card> c, QString starter, bool a) {
         button7->show();
         animation(pos_7 , button7);
         connect(button7, &QPushButton::clicked, this, [=]() {
-            QMessageBox::information(this, "Card Selected", "You selected: " + c[6].rank + " of " + c[6].suit);
-            QJsonObject payload;
-            payload["username"] = username;
-            payload["suit"] = c[6].suit;
-            payload["rank"] = c[6].rank;
-            myhand.push_back(c[6]);
+           // QMessageBox::information(this, "Card Selected", "You selected: " + c[6].rank + " of " + c[6].suit);
+            QJsonObject selected_card;
+            selected_card["rank"] = c[6].rank;
+            selected_card["suit"] = c[6].suit;
 
+            // ساختن payload
+            QJsonObject payload;
+            payload["selected_card"] = selected_card;
+
+            // ساختن mainobject
             QJsonObject mainobject;
             mainobject["command"] = "select_card";
             mainobject["payload"] = payload;
 
+            // ست کردن آیکن کارت
+            myhand.push_back(c[6]);
+            player_cards_place[round]->setIcon(c[6].imagePath);
+            player_cards_place[round]->setIconSize(QSize(cardWidth, cardHeight));
+
+            // ساختن JSON و آماده‌سازی برای ارسال
             QJsonDocument doc(mainobject);
-            QByteArray json_to_send = doc.toJson(QJsonDocument::Compact);
+            QByteArray json_to_send = doc.toJson(QJsonDocument::Indented);
+
+            // ارسال
+            client_socket->sendData(json_to_send); // برای جلوگیری از چسبیدن پیام‌ها
 
             // ارسال به سرور
-            client_socket->sendData(json_to_send);
             button1->hide();
             button2->hide();
             button3->hide();
@@ -632,6 +704,8 @@ void Poffer::choose_Card(QVector<Card> c, QString starter, bool a) {
             button5->hide();
             button6->hide();
             button7->hide();
+            emit(card_selected());
+
         });
     }
 
@@ -728,7 +802,7 @@ void Poffer::choose_turn(QString& starter, Card& player_startcard, Card& opp_sta
     QJsonDocument doc_2 = QJsonDocument::fromJson(res);
     mainobject = doc_2.object();
     if(mainobject["response"].toString()!="start_player"){
-        QMessageBox::warning(this,"warning","sevrer couldnot response");
+        //QMessageBox::warning(this,"warning","sevrer couldnot response");
         return;
     }
     playload_2 = mainobject["payload"].toObject();
