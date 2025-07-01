@@ -464,7 +464,7 @@ void Poffer::choose_Card(QVector<Card> c, QString starter, bool a) {
 
 
 
-    if(c.size()>1){
+    if(c.size()>0){
 
     QPixmap pix1(c[0].imagePath);
     button1->setIcon(QIcon(pix1));
@@ -517,7 +517,7 @@ void Poffer::choose_Card(QVector<Card> c, QString starter, bool a) {
 
     }
 
-    if(c.size()>2){
+    if(c.size()>1){
     // کارت دوم
     QPixmap pix2(c[1].imagePath);
     button2->setIcon(QIcon(pix2));
@@ -565,7 +565,7 @@ void Poffer::choose_Card(QVector<Card> c, QString starter, bool a) {
         emit card_selected();
     });
     }
-    if(c.size()>3){
+    if(c.size()>2){
 
     QPixmap pix3(c[2].imagePath);
     button3->setIcon(QIcon(pix3));
@@ -616,7 +616,7 @@ void Poffer::choose_Card(QVector<Card> c, QString starter, bool a) {
     }
 
     // کارت چهارم
-    if(c.size()>4){
+    if(c.size()>3){
     QPixmap pix4(c[3].imagePath);
     button4->setIcon(QIcon(pix4));
     button4->setIconSize(QSize(cardWidth, cardHeight));
@@ -666,7 +666,7 @@ void Poffer::choose_Card(QVector<Card> c, QString starter, bool a) {
     }
 
     // کارت پنجم
-    if(c.size()>5){
+    if(c.size()>4){
     QPixmap pix5(c[4].imagePath);
     button5->setIcon(QIcon(pix5));
     button5->setIconSize(QSize(cardWidth, cardHeight));
@@ -716,7 +716,7 @@ void Poffer::choose_Card(QVector<Card> c, QString starter, bool a) {
     }
 
     // کارت ششم
-    if(c.size()>6){
+    if(c.size()>5){
     QPixmap pix6(c[5].imagePath);
     button6->setIcon(QIcon(pix6));
     button6->setIconSize(QSize(cardWidth, cardHeight));

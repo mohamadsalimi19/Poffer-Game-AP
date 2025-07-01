@@ -48,12 +48,11 @@ bool start::get_start_response(){
     }
 }
 
-//mainobj["response"].toString()=="game_started"
 void start::handle_res(QByteArray a){
     QJsonDocument doc = QJsonDocument::fromJson(a);
     QJsonObject mainobj = doc.object();
     auto payload = mainobj["payload"].toObject();
-    if(1){
+    if(mainobj["response"].toString()=="game_started"){
         Poffer* g = new Poffer(client_socket, username, this->parentWidget());
         g->setGeometry(this->geometry());
         g->show();
