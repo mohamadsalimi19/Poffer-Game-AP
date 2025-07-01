@@ -50,6 +50,7 @@ private:
 
     QVector<Card> m_draftPool; // 7 cards that give to players
 
+    bool m_isFirstPickInMiniRound = true;
 
 public:
     GameSession(Player* player1, Player* player2, QObject *parent = nullptr);

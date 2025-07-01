@@ -29,6 +29,8 @@ public:
     // share diamond card for detemine fisrt player
     Card dealDiamondCard();
 
+    int cardCount() const ;
+
 
 };
 
