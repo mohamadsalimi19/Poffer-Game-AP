@@ -9,6 +9,7 @@
 #include<QPushButton>
 #include<QEventLoop>
 #include"QMetaObject"
+#include"menu.h"
 Poffer::Poffer(SocketManager* socket, QString username, QWidget *parent) :
     QWidget(parent),
     ui(new Ui::Poffer),
@@ -34,6 +35,12 @@ Poffer::Poffer(SocketManager* socket, QString username, QWidget *parent) :
     connect(this, &Poffer::card_recived, this, &Poffer::choose_Card);
     connect(this,&Poffer::card_selected,this,&Poffer::show_wait);
     connect(this,&Poffer::round_result,this,&Poffer::finish_round);
+    connect(this,&Poffer::game_over,this,&Poffer::finish_game);
+
+
+
+
+
 
     show_myhand();
     show_point();
@@ -173,6 +180,13 @@ void Poffer::onServerResponse(QByteArray data){
         emit round_result(opponent_hand,result,my_hand_rank,opponent_hand_rank,my_score,opponent_score);
     }
 
+    else if(obj["response"].toString()=="game_over"){
+
+
+
+
+
+    }
 
 
 
@@ -193,6 +207,19 @@ void Poffer::show_point(){
     op_point_labale->setStyleSheet("color: white; background-color: rgba(0,0,0,0.5); font: 14pt 'Segoe UI'; padding: 5px; border-radius: 8px;");
     op_point_labale->setGeometry(20, 20, 200, 40);
     op_point_labale->show();
+}
+
+
+void Poffer::finish_game(QString result){
+
+    QLabel* result_show = new QLabel(this);
+    result_show->setText("result : " + result);
+    result_show->setAlignment(Qt::AlignCenter);
+    result_show->setStyleSheet("color: white; background-color: #444; font: 16pt;");
+    result_show->setGeometry(400, 300, 500, 50);
+    result_show->show();
+    menu* mn = new menu();
+    mn->show();
 }
 
 

@@ -15,7 +15,7 @@ start::start(const QString& un, SocketManager* client, QWidget *parent)
     ui->setupUi(this);
 
     connect(client_socket, &SocketManager::dataReceived, this, [=]() {
-        if (1) { // حواست باشع
+        if (get_start_response()) { // حواست باشع
             Poffer* g = new Poffer(client_socket, username, this->parentWidget());
             g->setGeometry(this->geometry());
             g->show();
