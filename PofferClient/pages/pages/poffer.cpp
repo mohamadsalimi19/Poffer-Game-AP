@@ -19,6 +19,7 @@ Poffer::Poffer(SocketManager* socket, QString username, QWidget *parent) :
     ui->setupUi(this);    
     this->setFixedSize(1300, 750);
     get_card();
+    pause_button();
    /* connect(this, &Poffer::turn_showed, this,[=](){
         QJsonObject payload;
         QJsonObject mainobject;
@@ -37,6 +38,7 @@ Poffer::Poffer(SocketManager* socket, QString username, QWidget *parent) :
     connect(this,&Poffer::card_selected,this,&Poffer::show_wait);
     connect(this,&Poffer::round_result,this,&Poffer::finish_round);
     connect(this,&Poffer::game_over,this,&Poffer::finish_game);
+    connect(pauseButton,&QPushButton::clicked,this,&Poffer::pause_requset);
 
 
 
@@ -119,6 +121,75 @@ void Poffer::finish_round(QVector<Card> op_card,  QString result,QString my_hand
         opponent_hand_rank_show->deleteLater();
         emit turn_showed();
     });
+}
+
+void Poffer::pause_requset()
+{
+    QWidget* overlay = nullptr;
+
+   // جلوگیری از اضافه کردن چندباره
+
+    overlay = new QWidget(this);
+    overlay->setGeometry(this->rect());
+    overlay->setStyleSheet("background-color: rgba(0, 0, 0, 150);");
+    overlay->show();
+
+    QPushButton* resumeButton = new QPushButton("Resume", overlay);
+    resumeButton->setFixedSize(200, 80);
+    resumeButton->setStyleSheet(
+        "QPushButton {"
+        "    background-color: #4CAF50;"      // سبز ملایم
+        "    color: white;"                    // متن سفید واضح
+        "    font-size: 20px;"                 // متن کمی بزرگ‌تر
+        "    font-weight: bold;"              // ضخیم برای دیده شدن بهتر
+        "    padding: 10px 20px;"             // فاصله مناسب
+        "    border: none;"
+        "    border-radius: 12px;"            // گردی مناسب
+        "}"
+        "QPushButton:hover {"
+        "    background-color: #45A049;"      // سبز تیره‌تر هنگام هاور
+        "}"
+        "QPushButton:pressed {"
+        "    background-color: #3e8e41;"      // سبز تیره‌تر هنگام کلیک
+        "}"
+        );    resumeButton->move((overlay->width() - resumeButton->width()) / 2,(overlay->height() - resumeButton->height()) / 2 );
+    resumeButton->show();
+    connect(resumeButton, &QPushButton::clicked, this ,[=](){
+
+        overlay->hide();
+       // overlay->deleteLater();
+    });
+
+
+    QPushButton* exitButton = new QPushButton("Exit Game", overlay);
+    exitButton->setFixedSize(200, 80);
+    exitButton->move((overlay->width() - exitButton->width()) / 2, overlay->height() / 2 + 70);
+    exitButton->setStyleSheet(
+        "QPushButton {"
+        "    background-color: #E53935;"      // قرمز زیبا و قابل دید
+        "    color: white;"
+        "    font-size: 18px;"
+        "    font-weight: bold;"
+        "    padding: 10px 20px;"
+        "    border: none;"
+        "    border-radius: 12px;"
+        "}"
+        "QPushButton:hover {"
+        "    background-color: #D32F2F;"
+        "}"
+        "QPushButton:pressed {"
+        "    background-color: #C62828;"
+        "}"
+        );
+
+    // کانکشن بستن به اسلات خروج از بازی
+    exitButton->show();
+    connect(exitButton, &QPushButton::clicked, this, [=]() {
+        // اگر نیاز است قبل از خروج پیام pause یا خروج ارسال شود اینجا بزن
+        overlay->hide();
+    });
+
+
 }
 
 
@@ -342,8 +413,35 @@ void Poffer::animation(QPoint final_pos , QPushButton* button){
 
 }
 
+void Poffer::pause_button(){
+    QPushButton* ps = new QPushButton();
+    pauseButton = new QPushButton(this);
+    pauseButton->setIcon(QIcon(":/icons/pause.png")); // اگر ایکون داری
+    pauseButton->setText("Pause");
+    pauseButton->setCursor(Qt::PointingHandCursor);
+    pauseButton->setFixedSize(100, 36);
+    pauseButton->move(width() - pauseButton->width() - 15, 15); // گوشه بالا راست
+    pauseButton->setStyleSheet(R"(
+    QPushButton {
+        background-color: #e74c3c;      /* قرمز گرم */
+        color: white;                   /* متن سفید */
+        border: none;
+        border-radius: 8px;
+        font-weight: bold;
+    }
+    QPushButton:hover {
+        background-color: #c0392b;      /* تیره‌تر هنگام هاور */
+    }
+)");
+}
+
+
 
 void Poffer::choose_Card(QVector<Card> c, QString starter, bool a) {
+    for(auto a:c){
+
+        qDebug()<<a.suit;
+    }
     int cardWidth = 130;
     int cardHeight = 180;
     int spacing = 20;
@@ -366,7 +464,7 @@ void Poffer::choose_Card(QVector<Card> c, QString starter, bool a) {
 
 
 
-
+    if(c.size()>1){
 
     QPixmap pix1(c[0].imagePath);
     button1->setIcon(QIcon(pix1));
@@ -417,8 +515,9 @@ void Poffer::choose_Card(QVector<Card> c, QString starter, bool a) {
 
     });
 
+    }
 
-
+    if(c.size()>2){
     // کارت دوم
     QPixmap pix2(c[1].imagePath);
     button2->setIcon(QIcon(pix2));
@@ -465,8 +564,9 @@ void Poffer::choose_Card(QVector<Card> c, QString starter, bool a) {
         button7->hide();
         emit card_selected();
     });
+    }
+    if(c.size()>3){
 
-    // کارت سوم
     QPixmap pix3(c[2].imagePath);
     button3->setIcon(QIcon(pix3));
     button3->setIconSize(QSize(cardWidth, cardHeight));
@@ -513,8 +613,10 @@ void Poffer::choose_Card(QVector<Card> c, QString starter, bool a) {
         emit(card_selected());
 
     });
+    }
 
     // کارت چهارم
+    if(c.size()>4){
     QPixmap pix4(c[3].imagePath);
     button4->setIcon(QIcon(pix4));
     button4->setIconSize(QSize(cardWidth, cardHeight));
@@ -561,8 +663,10 @@ void Poffer::choose_Card(QVector<Card> c, QString starter, bool a) {
         emit(card_selected());
 
     });
+    }
 
     // کارت پنجم
+    if(c.size()>5){
     QPixmap pix5(c[4].imagePath);
     button5->setIcon(QIcon(pix5));
     button5->setIconSize(QSize(cardWidth, cardHeight));
@@ -609,8 +713,10 @@ void Poffer::choose_Card(QVector<Card> c, QString starter, bool a) {
         emit(card_selected());
 
     });
+    }
 
     // کارت ششم
+    if(c.size()>6){
     QPixmap pix6(c[5].imagePath);
     button6->setIcon(QIcon(pix6));
     button6->setIconSize(QSize(cardWidth, cardHeight));
@@ -657,6 +763,7 @@ void Poffer::choose_Card(QVector<Card> c, QString starter, bool a) {
         emit(card_selected());
 
     });
+    }
 
     if(c.size()>6){
         QPixmap pix7(c[6].imagePath);
@@ -834,6 +941,7 @@ void Poffer::show_wait() {
     label->setGeometry(400, 350, 500, 50);
     label->show();
     waiting_label = label;
+    round++;
 }
 
 
@@ -881,7 +989,7 @@ void Poffer::get_card(){
     deck.append(Card{"DIAMOND", "EIGHT", ":/img/Dimond-8.JPG"});
     deck.append(Card{"DIAMOND", "NINE", ":/img/Dimond-9.JPG"});
     deck.append(Card{"DIAMOND", "TEN", ":/img/Dimond-10.JPG"});
-    deck.append(Card{"DIAMOND", "SOLDIER", ":/img/Dimond-Solider.JPG"});
+    deck.append(Card{"DIAMOND", "SOLDIER", ":/img/Dimond-Soldier.JPG"});
     deck.append(Card{"DIAMOND", "QUEEN", ":/img/Dimond-Queen.JPG"});
     deck.append(Card{"DIAMOND", "KING", ":/img/Dimond-King.JPG"});
     deck.append(Card{"DIAMOND", "BITCOIN", ":/img/Dimond-Bitcoin.JPG"});
@@ -896,7 +1004,7 @@ void Poffer::get_card(){
     deck.append(Card{"DOLLAR", "EIGHT", ":/img/Dollar-8.JPG"});
     deck.append(Card{"DOLLAR", "NINE", ":/img/Dollar-9.JPG"});
     deck.append(Card{"DOLLAR", "TEN", ":/img/Dollar-10.JPG"});
-    deck.append(Card{"DOLLAR", "SOLDIER", ":/img/Dollar-Solider.JPG"});
+    deck.append(Card{"DOLLAR", "SOLDIER", ":/img/Dollar-Soldier.JPG"});
     deck.append(Card{"DOLLAR", "QUEEN", ":/img/Dollar-Queen.JPG"});
     deck.append(Card{"DOLLAR", "KING", ":/img/Dollar-King.JPG"});
     deck.append(Card{"DOLLAR", "BITCOIN", ":/img/Dollar-Bitcoin.JPG"});

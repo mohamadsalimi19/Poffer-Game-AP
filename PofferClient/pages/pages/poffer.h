@@ -27,7 +27,10 @@ class Poffer : public QWidget
     QLabel* waiting_label ;
     QLabel* my_point_labale;
     QLabel* op_point_labale;
+    QPushButton* pauseButton;
+    QPushButton* continueButton;
     int round;
+
 
    // QString starter;
    // Card player_start;
@@ -56,6 +59,8 @@ public:
     void onServerResponse(QByteArray data);
     void finish_round(QVector<Card> , QString result ,QString my_hand_rank , QString opponent_hand_rank , QString my_score , QString opponent_score);
     void finish_game(QString result);
+    void pause_button();
+    void pause_requset();
 
 private slots:
 
