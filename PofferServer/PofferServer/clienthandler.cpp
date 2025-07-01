@@ -99,6 +99,9 @@ void ClientHandler::processMessage(const QJsonObject& message)
     } else if (command == "select_card") {
         handleSelectCard(payload);
     }
+     else if (command == "edit_profile") {
+     handleEditProfile(payload);
+    }
     // TODO: دستورات دیگر مثل انتخاب کارت و ... را هم اینجا اضافه کن
 }
 //////////////////////////////////////////////////////////////////////////
@@ -244,3 +247,18 @@ ClientHandler::~ClientHandler()
     qDebug() << "ClientHandler for socket" << m_socketDescriptor << "is being destroyed.";
 }
 //////////////////////////////////////////////////////////////////////////
+void ClientHandler::handleEditProfile(const QJsonObject& payload)
+{
+    if (!m_player) return; // اگر کاربر لاگین نکرده، هیچ
+
+    bool success = UserManager::instance()->updatePlayerProfile(m_player->getUsername(), payload);
+
+    QJsonObject response;
+    if (success) {
+        response["response"] = "profile_update_success";
+    } else {
+        response["response"] = "profile_update_error";
+        qDebug() << "invalid change information";
+    }
+    sendJson(response);
+}
