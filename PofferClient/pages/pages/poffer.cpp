@@ -33,7 +33,7 @@ Poffer::Poffer(SocketManager* socket, QString username, QWidget *parent) :
     });
 
 */
-    connect(client_socket,&SocketManager::dataReceived,this,&Poffer::onServerResponse);
+    //connect(client_socket,&SocketManager::dataReceived,this,&Poffer::onServerResponse);
     //connect(this, &Poffer::card_recived, this, &Poffer::choose_Card);
     connect(this,&Poffer::card_selected,this,&Poffer::show_wait);
     connect(this,&Poffer::round_result,this,&Poffer::finish_round);
@@ -145,9 +145,9 @@ void Poffer::onServerResponse(QByteArray data){
             auto c = val.toObject();
             QString suit = c["suit"].toString();
             QString rank = c["rank"].toString();
-            auto t = find_card(rank,suit);
-            qDebug()<<t.rank;
-            cards.push_back(find_card(rank, suit));
+            //auto t = find_card(rank,suit);
+            //  qDebug()<<t.rank;
+            //cards.push_back(find_card(rank, suit));
         }
         emit card_recived(cards, username, true);
     }
