@@ -19,8 +19,12 @@ public:
     ~start();
     void set_username(QString un , SocketManager* client);
     void start_game();
+    void handle_res(QByteArray a);
+
 
 public slots:
+
+signals:
 
 private:
     Ui::start *ui;

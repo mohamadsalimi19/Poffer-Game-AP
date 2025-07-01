@@ -73,7 +73,6 @@ void Poffer::start_round(){
     }
     else{
         QByteArray t;
-       // get_list_card_of_turn();
     }
 }
 
@@ -181,8 +180,10 @@ void Poffer::onServerResponse(QByteArray data){
     }
 
     else if(obj["response"].toString()=="game_over"){
-
-
+        auto payload =  obj["payload"].toObject();
+        QString result = payload["result"].toString();
+        QString Reson = payload["reson"].toString();
+        emit game_over(result);
 
 
 

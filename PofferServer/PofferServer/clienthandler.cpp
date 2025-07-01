@@ -186,9 +186,9 @@ void ClientHandler::handleRequestGame(const QJsonObject& /*payload*/)
       //  return;
     }
 
-  //  qDebug() << "Player" << m_player->getUsername() << "is requesting a game.";
+   qDebug() << "Player" << m_player->getUsername() << "is requesting a game.";
 
-   // GameManager::instance()->playerWantsToPlay(m_player);
+   GameManager::instance()->playerWantsToPlay(m_player);
     QJsonObject response;
     response["response"] = "waiting_for_opponent";
     sendJson(response);

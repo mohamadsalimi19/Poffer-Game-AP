@@ -14,14 +14,7 @@ start::start(const QString& un, SocketManager* client, QWidget *parent)
 {
     ui->setupUi(this);
 
-    connect(client_socket, &SocketManager::dataReceived, this, [=]() {
-        if (get_start_response()) { // حواست باشع
-            Poffer* g = new Poffer(client_socket, username, this->parentWidget());
-            g->setGeometry(this->geometry());
-            g->show();
-            this->close();
-        }
-    });
+    connect(client_socket, &SocketManager::dataReceived, this,&start::handle_res);
 
     start_game();
 }
@@ -56,6 +49,19 @@ bool start::get_start_response(){
     }
     else{
         return false;
+    }
+}
+
+
+void start::handle_res(QByteArray a){
+    QJsonDocument doc = QJsonDocument::fromJson(a);
+    QJsonObject mainobj = doc.object();
+    auto payload = mainobj["payload"].toObject();
+    if(mainobj["response"].toString()=="game_started"){
+        Poffer* g = new Poffer(client_socket, username, this->parentWidget());
+        g->setGeometry(this->geometry());
+        g->show();
+        this->close();
     }
 }
 
