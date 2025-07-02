@@ -4,11 +4,9 @@
 #include <QObject>
 #include <QList>
 
-class Card;
 class Player;
 class GameSession;
-class ClientHandler;
-class QJsonObject;
+
 
 class GameManager : public QObject
 {
@@ -38,13 +36,6 @@ public:
 public slots:
     void onGameFinished(GameSession* session);
     void onSendMessageToPlayer(Player* player, const QJsonObject& message);
-    void onLoginRequested(ClientHandler* handler, const QJsonObject& payload);
-    void onSignupRequested(ClientHandler* handler, const QJsonObject& payload);
-    void onGameRequested(ClientHandler* handler);
-    void onCardSelected(ClientHandler* handler, const Card& card);
-
-private slots:
-    void onPlayerWantsToPlay(Player* player);
 
 };
 

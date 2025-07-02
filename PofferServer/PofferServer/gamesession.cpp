@@ -103,7 +103,8 @@ void GameSession::sendDraftPoolToCurrentPlayer()
     // send signal
     emit sendMessageToPlayer(m_currentPlayerForDraft, response);
 
-    m_inactivityTimer->start(30000);
+    //m_inactivityTimer->start(30000);
+    QMetaObject::invokeMethod(m_inactivityTimer, "start", Qt::QueuedConnection, Q_ARG(int, 30000));
     qDebug() << "Started 30s inactivity timer for" << m_currentPlayerForDraft->getUsername();
 }
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -124,7 +125,8 @@ void GameSession::playerSelectedCard(Player* player, const Card& selectedCard)
         return;
     }
 
-    m_inactivityTimer->stop();
+    //m_inactivityTimer->stop();
+    QMetaObject::invokeMethod(m_inactivityTimer, "stop", Qt::QueuedConnection);
     qDebug() << "Inactivity timer stopped for" << player->getUsername();
 
     // add card to player hand
