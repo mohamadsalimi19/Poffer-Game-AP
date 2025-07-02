@@ -19,6 +19,7 @@ public:
 };
 
 
+class Card;
 
 class ClientHandler : public QObject
 {
@@ -57,6 +58,11 @@ public slots:
 
 signals:
     void finished();
+
+    void loginRequested(ClientHandler* handler, const QJsonObject& payload);
+    void signupRequested(ClientHandler* handler, const QJsonObject& payload);
+    void gameRequested(ClientHandler* handler);
+    void cardSelected(ClientHandler* handler, const Card& card);
 };
 
 #endif // CLIENTHANDLER_H

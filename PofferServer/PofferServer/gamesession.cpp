@@ -21,6 +21,13 @@ GameSession::GameSession(Player* player1, Player* player2, QObject *parent)
     m_disconnectTimer = new QTimer(this);
     m_disconnectTimer->setSingleShot(true); // timer use just one time
     connect(m_disconnectTimer, &QTimer::timeout, this, &GameSession::onDisconnectTimerTimeout);
+
+    // --- بخش جدید: تنظیم تایمر عدم فعالیت ---
+    m_inactivityTimer = new QTimer(this);
+    m_inactivityTimer->setSingleShot(true);
+    connect(m_inactivityTimer, &QTimer::timeout, this, &GameSession::onInactivityTimeout);
+    m_inactivityStrikes[m_player1] = 0;
+    m_inactivityStrikes[m_player2] = 0;
 }
 //////////////////////////////////////////////////////////////////////////////////////////
 void GameSession::startNewRound()
@@ -95,6 +102,9 @@ void GameSession::sendDraftPoolToCurrentPlayer()
 
     // send signal
     emit sendMessageToPlayer(m_currentPlayerForDraft, response);
+
+    m_inactivityTimer->start(30000);
+    qDebug() << "Started 30s inactivity timer for" << m_currentPlayerForDraft->getUsername();
 }
 //////////////////////////////////////////////////////////////////////////////////////////
 /// \brief GameSession::playerSelectedCard
@@ -113,6 +123,9 @@ void GameSession::playerSelectedCard(Player* player, const Card& selectedCard)
         qWarning() << "Player" << player->getUsername() << "selected a card that is not in the draft pool.";
         return;
     }
+
+    m_inactivityTimer->stop();
+    qDebug() << "Inactivity timer stopped for" << player->getUsername();
 
     // add card to player hand
     if (player == m_player1) m_player1_hand.addCard(selectedCard);
@@ -569,4 +582,29 @@ Player* GameSession::getOpponent(Player* player) const
         return m_player1;
     }
     return nullptr; // never reach here
+}
+//////////////////////////////////////////////////////////////////////////////////////////
+void GameSession::onInactivityTimeout()
+{
+    Player* inactivePlayer = m_currentPlayerForDraft;
+    qDebug() << "Player" << inactivePlayer->getUsername() << "was inactive!";
+
+    // تعداد اخطارهای او را یکی اضافه می‌کنیم
+    m_inactivityStrikes[inactivePlayer]++;
+    int currentStrikes = m_inactivityStrikes[inactivePlayer];
+    qDebug() << "This is strike" << currentStrikes << "for" << inactivePlayer->getUsername();
+
+    // بر اساس تعداد اخطارها تصمیم می‌گیریم
+    if (currentStrikes >= 2) {
+        qDebug() << "Player has 2 strikes. They lose the game.";
+        Player* winner = getOpponent(inactivePlayer);
+        endGame(winner, "Opponent was inactive for a second time.");
+    } else {
+        qDebug() << "Selecting a random card for them.";
+        if (!m_draftPool.isEmpty()) {
+            int randomIndex = QRandomGenerator::global()->bounded(m_draftPool.size());
+            Card randomCard = m_draftPool[randomIndex];
+            playerSelectedCard(inactivePlayer, randomCard);
+        }
+    }
 }

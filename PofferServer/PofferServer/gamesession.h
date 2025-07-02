@@ -11,6 +11,7 @@
 
 using namespace std ;
 
+class Card;
 
 class GameSession_exception: public exception {
 public:
@@ -28,7 +29,7 @@ private:
     void startDraftingPhase(); // start sharing cards
     void sendDraftPoolToCurrentPlayer(); // give 7 card to current palyer
     void endGame(Player* winner, const QString& reason);
-    void onDisconnectTimerTimeout();
+    //void onDisconnectTimerTimeout();
 
     Player* breakTie(const Hand& hand1, const Hand& hand2, HandEvaluator::HandRank rank); // if 2 hand is equal chek it in herre
 
@@ -53,6 +54,10 @@ private:
 
     bool m_isFirstPickInMiniRound = true;
 
+    // inactive
+    QTimer* m_inactivityTimer; // <<--- تایمر جدید
+    QMap<Player*, int> m_inactivityStrikes; // <<--- ش
+
 public:
     GameSession(Player* player1, Player* player2, QObject *parent = nullptr);
 
@@ -64,7 +69,7 @@ public:
     void playerDisconnected(Player* disconnectedPlayer);
 
     // this function clalled by client hanlder while player select a card
-    void playerSelectedCard(Player* player, const Card& selectedCard);
+    //void playerSelectedCard(Player* player, const Card& selectedCard);
 
     // this functions help us to test logic server
     void setPlayer1Hand(const Hand& hand) {
@@ -84,6 +89,14 @@ signals:
     void gameFinished(GameSession* session);
     void sendMessageToPlayer(Player* player, const QJsonObject& message);
 
+public slots:
+    void playerSelectedCard(Player* player, const Card& selectedCard);
+    //void handleStopRequest(Player* player); // اینها برای قابلیت‌های بعدی هستند
+    //void handleResumeRequest(Player* player);
+
+private slots:
+    void onDisconnectTimerTimeout();
+    void onInactivityTimeout(); // <<--- اسلات جدید برای تایمر عدم فعالیت
 };
 
 #endif // GAMESESSION_H
