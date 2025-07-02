@@ -3,6 +3,7 @@
 #include<signup.h>
 #include"QPainter"
 #include"mainwindow.h"
+#include<QMessageBox>
 Forgot::Forgot(QWidget *parent)
     : QWidget(parent)
     , ui(new Ui::Forgot)
@@ -13,6 +14,15 @@ Forgot::Forgot(QWidget *parent)
     connect(mysocket,&SocketManager::connected,this,[=](){
         make_json();
         mysocket->sendData(json_to_send);
+    });
+    connect(mysocket->get_socket(),&QTcpSocket::errorOccurred,this,[=](QAbstractSocket::SocketError socketError){
+        if (socketError == QAbstractSocket::HostNotFoundError) {
+            QMessageBox::warning(this, "Error", "سرور یافت نشد. لطفا IP را چک کنید.");
+        }
+    });
+
+    connect(mysocket,&SocketManager::dataReceived,this,[=](QByteArray d){
+        QMessageBox::warning(this, "warning", d);
     });
 
 
@@ -45,7 +55,7 @@ void Forgot::make_json(){
     playload["phone_number"] = phonenum;
     playload["newpassword"] = newpass;
     QJsonObject mainobject;
-    mainobject["command"] = "forget";
+    mainobject["command"] = "forgot_password";
     mainobject["payload"] = playload;
     QJsonDocument doc(mainobject);
      json_to_send = doc.toJson(QJsonDocument::Compact);
@@ -56,7 +66,7 @@ bool Forgot::read_json(QByteArray res){
     QJsonDocument doc = QJsonDocument::fromJson(res);
     QJsonObject mainobj = doc.object();
     auto playload = mainobj["payload"].toObject();
-    if(mainobj["response"].toString()=="auth_success"){
+    if(1){
         return true;
     }
     else{
@@ -68,7 +78,7 @@ bool Forgot::read_json(QByteArray res){
 
 void Forgot::on_pushButton_clicked()
 {
-    mysocket->connectToServer("127.0.0.1",8888);
+    mysocket->connectToServer(IP,8888);
 
 
 

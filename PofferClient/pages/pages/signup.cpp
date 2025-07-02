@@ -16,6 +16,11 @@ signup::signup(QWidget *parent)
 {
     mysocket = new SocketManager();
     connect(mysocket, &SocketManager::dataReceived, this, &signup::onServerResponse);
+    connect(mysocket->get_socket(),&QTcpSocket::errorOccurred,this,[=](QAbstractSocket::SocketError socketError){
+        if (socketError == QAbstractSocket::HostNotFoundError) {
+            QMessageBox::warning(this, "Error", "سرور یافت نشد. لطفا IP را چک کنید.");
+        }
+    });
     ui->setupUi(this);
 
 
