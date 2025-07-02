@@ -25,13 +25,11 @@ void PofferServer::incomingConnection(qintptr socketDescriptor)
     ClientHandler* handler = new ClientHandler(socketDescriptor);
     handler->moveToThread(thread);
 
-    // --- این بلوک را با نسخه زیر جایگزین کن ---
     connect(thread, &QThread::started, handler, &ClientHandler::process);
     connect(handler, &ClientHandler::finished, thread, &QThread::quit);
-    // این دو خط تضمین می‌کنند که بعد از اتمام کار، حافظه به درستی پاک می‌شود
+    // garantin delete space safety after end
     connect(thread, &QThread::finished, handler, &ClientHandler::deleteLater);
     connect(thread, &QThread::finished, thread, &QThread::deleteLater);
-    // ------------------------------------------
 
     thread->start();
 }

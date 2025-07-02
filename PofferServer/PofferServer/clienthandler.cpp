@@ -29,7 +29,7 @@ void ClientHandler::process()
         return;
     }
 
-    // ۲. سیگنال‌های سوکت را به اسلات‌های خودمان وصل می‌کنیم
+    // connecting signal socket's to our slots
     connect(m_socket, &QTcpSocket::readyRead, this, &ClientHandler::onReadyRead);
     connect(m_socket, &QTcpSocket::disconnected, this, &ClientHandler::onDisconnected);
 
@@ -57,7 +57,7 @@ void ClientHandler::onDisconnected()
 {
     qDebug() << "Client disconnected:" << m_socketDescriptor;
     m_socket->deleteLater(); // schadul for delete
-    emit finished(); // به ترد اصلی خبر می‌دهیم که کار ما تمام شد
+    emit finished(); //call main threat
 }
 //////////////////////////////////////////////////////////////////////////
 void ClientHandler::sendJson(const QJsonObject& json)
@@ -189,8 +189,21 @@ void ClientHandler::handleRequestGame(const QJsonObject& /*payload*/)
     if (!m_player || m_gameSession) {
         qWarning() << "Player" << (m_player ? m_player->getUsername() : "Unauthenticated")
         << "sent a game request at an invalid time.";
-        // TODO: می‌توانی یک پیام خطا هم برای کلاینت بفرستی
-      //  return;
+
+        QJsonObject errorPayload;
+        errorPayload["message"] = "Cannot request a new game while already in a session.";
+
+        QJsonObject errorResponse;
+        errorResponse["response"] = "request_game_error";
+        errorResponse["payload"] = errorPayload;
+
+        sendJson(errorResponse);
+        //error
+        /*
+        { "response" : ".." ,  "payload":{ "message" : ".." }  }
+         */
+
+        return;
     }
 
    qDebug() << "Player" << m_player->getUsername() << "is requesting a game.";
@@ -214,9 +227,15 @@ void ClientHandler::startGame(GameSession* session)
     qDebug() << "Notifying player" << m_player->getUsername() << "that their game has started.";
 
     // make a json pm for client
+    Player* opponent = m_gameSession->getOpponent(m_player);
+
+    // json form enemy
     QJsonObject payload;
-    // TODO: در آینده باید اطلاعات حریف را هم اینجا اضافه کنیم
-    // payload["opponent_username"] = ...;
+    if (opponent) {
+        payload["opponent_username"] = opponent->getUsername();
+    } else {
+        payload["opponent_username"] = "Unknown";
+    }
 
     QJsonObject response;
     response["response"] = "game_started";
@@ -252,7 +271,7 @@ ClientHandler::~ClientHandler()
 //////////////////////////////////////////////////////////////////////////
 void ClientHandler::handleEditProfile(const QJsonObject& payload)
 {
-    if (!m_player) return; // اگر کاربر لاگین نکرده، هیچ
+    if (!m_player) return; // user dont login
 
     bool success = UserManager::instance()->updatePlayerProfile(m_player->getUsername(), payload);
 

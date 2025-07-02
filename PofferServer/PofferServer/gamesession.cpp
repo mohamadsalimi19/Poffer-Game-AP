@@ -242,7 +242,7 @@ Player* GameSession::evaluateAndFinishRound(){
     // make json player 1
     QJsonObject payload1;
     payload1["result"] = (winner == m_player1) ? "won" : (winner == m_player2) ? "lost" : "draw";
-    payload1["my_hand_rank"] = rankToString(rank1); // نیاز به تابع کمکی rankToString داریم
+    payload1["my_hand_rank"] = rankToString(rank1);// helping function
     payload1["opponent_hand_rank"] = rankToString(rank2);
     payload1["opponent_hand"] = hand2_json_array;
     payload1["my_score"] = m_player1_score;
@@ -303,7 +303,7 @@ Card::Rank findNOfAKindRank(int n, const QMap<Card::Rank, int>& counts) {
             return it.key();
         }
     }
-    return Card::TWO; // هرگز نباید به اینجا برسد
+    return Card::TWO; // never reach here
 }
 
 // this function compare list kicker and find player winner
@@ -346,7 +346,7 @@ Player* GameSession::breakTie(const Hand& hand1, const Hand& hand2, HandEvaluato
         case HandEvaluator::ORDER_HAND:
         case HandEvaluator::SERIES: {
             // highest rank
-            auto s1_highest = hand1.getCards().last().getRank(); // دست‌ها در HandEvaluator مرتب شده‌اند
+            auto s1_highest = hand1.getCards().last().getRank();
             auto s2_highest = hand2.getCards().last().getRank();
             if (s1_highest > s2_highest) return m_player1;
             if (s2_highest > s1_highest) return m_player2;
@@ -371,7 +371,6 @@ Player* GameSession::breakTie(const Hand& hand1, const Hand& hand2, HandEvaluato
 
         // base on pair cards if doesn;t work base on other cards
         case HandEvaluator::DOUBLE_PAIR: {
-            // مرحله ب: حالا که نقشه شمارش را داریم، در آن می‌گردیم
             QList<Card::Rank> pairs1, pairs2;
             Card::Rank kicker1 = Card::TWO, kicker2 = Card::TWO;
 
@@ -503,13 +502,13 @@ void GameSession::endGame(Player* winner, const QString& reason)
 {
     qDebug() << "Game is ending. Winner:" << (winner ? winner->getUsername() : "None (Draw)") << "Reason:" << reason;
 
-    // پیدا کردن بازنده (اگر برنده‌ای وجود داشته باشد)
+    // find loser
     Player* loser = nullptr;
     if (winner) {
         loser = (winner == m_player1) ? m_player2 : m_player1;
     }
 
-    // --- ساخت و درخواست ارسال پیام برای برنده ---
+    // make json for winner
     if (winner) {
         QJsonObject payload_win;
         payload_win["result"] = "You Won!";
@@ -519,11 +518,10 @@ void GameSession::endGame(Player* winner, const QString& reason)
         response_win["response"] = "game_over";
         response_win["payload"] = payload_win;
 
-        // درخواست ارسال پیام به برنده
         emit sendMessageToPlayer(winner, response_win);
     }
 
-    // --- ساخت و درخواست ارسال پیام برای بازنده ---
+    // make json for loser
     if (loser) {
         QJsonObject payload_lose;
         payload_lose["result"] = "You Lost!";
@@ -533,19 +531,28 @@ void GameSession::endGame(Player* winner, const QString& reason)
         response_lose["response"] = "game_over";
         response_lose["payload"] = payload_lose;
 
-        // درخواست ارسال پیام به بازنده
         emit sendMessageToPlayer(loser, response_lose);
     }
 
-    // --- مرحله نهایی: اعلام پایان کار به GameManager ---
-    // این سیگنال باید در انتهای تابع باشد
+
+    // notify end game
     emit gameFinished(this);
 }
 //////////////////////////////////////////////////////////////////////////////////////////
 void GameManager::onSendMessageToPlayer(Player* player, const QJsonObject& message)
 {
     if (player && player->getHandler()) {
-        // از invokeMethod استفاده می‌کنیم تا sendJson به صورت امن در ترد صحیح اجرا شود
+        // use invokeMethod for safety to use sendjson
         QMetaObject::invokeMethod(player->getHandler(), "sendJson", Qt::QueuedConnection,Q_ARG(QJsonObject, message));
     }
+}
+//////////////////////////////////////////////////////////////////////////////////////////
+Player* GameSession::getOpponent(Player* player) const
+{
+    if (player == m_player1) {
+        return m_player2;
+    } else if (player == m_player2) {
+        return m_player1;
+    }
+    return nullptr; // never reach here
 }
