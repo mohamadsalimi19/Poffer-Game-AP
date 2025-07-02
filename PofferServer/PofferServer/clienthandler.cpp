@@ -111,6 +111,13 @@ void ClientHandler::processMessage(const QJsonObject& message)
     else if (command == "timeout_lost") { // <<--- دستور جدید
         handleTimeoutLost(payload);
     }
+    else if (command == "stop_request") {
+        handleStopRequest(payload);
+    } else if (command == "resume_request") {
+        handleResumeRequest(payload);
+    } else if (command == "pause_timeout") {
+        handlePauseTimeout(payload);
+    }
     // TODO: دستورات دیگر مثل انتخاب کارت و ... را هم اینجا اضافه کن
 }
 //////////////////////////////////////////////////////////////////////////
@@ -320,7 +327,7 @@ void ClientHandler::handleRequestProfileData(const QJsonObject& /*payload*/)
 //////////////////////////////////////////////////////////////////////////
 void ClientHandler::handleTimeoutLost(const QJsonObject& /*payload*/)
 {
-    // اگر بازیکن در بازی نباشد، این دستور بی‌معنی است
+    // there isn't player in game
     if (!m_player || !m_gameSession) {
         qWarning() << "Received a timeout_lost command from a player not in a game.";
         return;
@@ -328,11 +335,44 @@ void ClientHandler::handleTimeoutLost(const QJsonObject& /*payload*/)
 
     qDebug() << "Player" << m_player->getUsername() << "lost on time (2nd strike). Ending game.";
 
-    // ۱. حریف این بازیکن را پیدا می‌کنیم
+    // find opponent player
     Player* winner = m_gameSession->getOpponent(m_player);
 
-    // ۲. بازی را به نفع حریف تمام می‌کنیم
+    // winner opponent
     if (winner) {
         m_gameSession->endGame(winner, "Opponent timed out (2nd strike).");
     }
 }
+//////////////////////////////////////////////////////////////////////////
+void ClientHandler::handleStopRequest(const QJsonObject& /*payload*/) {
+    // there isn't player
+    if (!m_player || !m_gameSession) return;
+    //find opponent and send json
+    Player* opponent = m_gameSession->getOpponent(m_player);
+    if (opponent && opponent->getHandler()) {
+        QJsonObject payload;
+        payload["pauser_username"] = m_player->getUsername();
+        QJsonObject response{{"response", "game_paused"}, {"payload", payload}};
+        opponent->getHandler()->sendJson(response);
+    }
+}
+//////////////////////////////////////////////////////////////////////////
+void ClientHandler::handleResumeRequest(const QJsonObject& /*payload*/) {
+    if (!m_player || !m_gameSession) return;
+    //find opponent and send json
+    Player* opponent = m_gameSession->getOpponent(m_player);
+    if (opponent && opponent->getHandler()) {
+        QJsonObject response{{"response", "game_resumed"}};
+        opponent->getHandler()->sendJson(response);
+    }
+}
+//////////////////////////////////////////////////////////////////////////
+void ClientHandler::handlePauseTimeout(const QJsonObject& /*payload*/) {
+    if (!m_player || !m_gameSession) return;
+    //find opponent and send json
+    Player* winner = m_gameSession->getOpponent(m_player);
+    if (winner) {
+        m_gameSession->endGame(winner, "Opponent did not resume in time.");
+    }
+}
+//////////////////////////////////////////////////////////////////////////

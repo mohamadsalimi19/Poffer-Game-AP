@@ -36,6 +36,9 @@ private:
     void handleEditProfile(const QJsonObject& payload);
     void handleRequestProfileData(const QJsonObject& payload);
     void handleTimeoutLost(const QJsonObject& payload);
+    void handleStopRequest(const QJsonObject& payload);
+    void handleResumeRequest(const QJsonObject& payload);
+    void handlePauseTimeout(const QJsonObject& payload);
     // values
     qintptr m_socketDescriptor; // a pointer
     QTcpSocket* m_socket = nullptr;
