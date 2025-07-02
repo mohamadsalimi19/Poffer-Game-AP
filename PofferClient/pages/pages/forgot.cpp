@@ -2,6 +2,7 @@
 #include "ui_forgot.h"
 #include<signup.h>
 #include"QPainter"
+#include"mainwindow.h"
 Forgot::Forgot(QWidget *parent)
     : QWidget(parent)
     , ui(new Ui::Forgot)

@@ -6,6 +6,10 @@
 #include<signup.h>
 #include<login.h>
 QT_BEGIN_NAMESPACE
+
+extern QString IP;
+
+
 namespace Ui {
 class MainWindow;
 }
@@ -21,6 +25,8 @@ public:
     bool signedIn;
 private slots:
     void on_pushButton_clicked();
+
+    void on_lineEdit_textEdited(const QString &arg1);
 
 private:
     Ui::MainWindow *ui;

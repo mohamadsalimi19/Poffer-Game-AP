@@ -9,6 +9,7 @@
 #include"QTimer"
 #include"QPainter"
 #include<QMessageBox>
+#include"mainwindow.h"
 signup::signup(QWidget *parent)
     : QWidget(parent)
     , ui(new Ui::signup)

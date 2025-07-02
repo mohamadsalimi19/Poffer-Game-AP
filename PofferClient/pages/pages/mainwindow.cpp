@@ -13,14 +13,20 @@ MainWindow::MainWindow(QWidget *parent)
     QSettings settings("MyCompany", "MyApp");
     signedIn = settings.value("signed_in", false).toBool();
 }
-
+QString IP = "";
 MainWindow::~MainWindow()
 {
     delete ui;
 }
 
+
 void MainWindow::on_pushButton_clicked()
 {
+
+    if(IP!=""){
+
+
+
     signup* sp = new signup();
     //menu* mp = new menu();
     this->close();
@@ -45,12 +51,14 @@ void MainWindow::on_pushButton_clicked()
     }
 
 
+    }
+
+}
 
 
+void MainWindow::on_lineEdit_textEdited(const QString &arg1)
+{
 
-
-
-
-
+    IP = arg1;
 }
 
