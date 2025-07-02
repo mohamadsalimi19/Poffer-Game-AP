@@ -52,7 +52,7 @@ Poffer::Poffer(SocketManager* socket, QString username, QWidget *parent) :
     connect(this,&Poffer::op_disconnected,this,&Poffer::opponent_disconnected_show);
     connect(this,&Poffer::game_paused,this,&Poffer::game_pausedSLOT);
     connect(this,&Poffer::game_resumed,this,&Poffer::game_resumedSLOT);
-
+    connect(this,&Poffer::round_started,this,&Poffer::show_turn);
 
     if(num_pause>=2){
         pauseButton->setEnabled(false);
@@ -474,11 +474,11 @@ void Poffer::onServerResponse(QByteArray data){
             Card player2_card = find_card(player2_card_obj["rank"].toString(), player2_card_obj["suit"].toString());
 
             QString starter = payload["starter_username"].toString();
-            round_started(starter,player1_card,player2_card);
 
+            if(player1==username) round_started(player1_card,player2_card);
+
+            else round_started(player2_card,player1_card);
     }
-
-
 }
 
 void Poffer::show_point(){

@@ -84,7 +84,7 @@ signals:
     void op_disconnected();
     void game_resumed();
     void game_paused();
-    void round_started(QString player1, Card player1_card,Card player2_card);
+    void round_started(Card player1_card,Card player2_card);
 
 private:
     Ui::Poffer *ui;

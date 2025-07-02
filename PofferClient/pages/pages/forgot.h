@@ -16,7 +16,7 @@ class Forgot : public QWidget
     bool read_json(QByteArray ar);
     QByteArray json_to_send;
     SocketManager* mysocket;
-
+    QString username;
 
 public:
     explicit Forgot(QWidget *parent = nullptr);
@@ -32,6 +32,8 @@ private slots:
     void on_pushButton_2_clicked();
     void onServerResponse(QByteArray data);
 
+
+    void on_lineEdit_3_textChanged(const QString &arg1);
 
 private:
     Ui::Forgot *ui;

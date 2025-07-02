@@ -40,6 +40,7 @@ void Forgot::on_lineEdit_2_textEdited(const QString &arg1)
 
 void Forgot::make_json(){
     QJsonObject playload;
+    playload["username"] = username;
     playload["phone_number"] = phonenum;
     playload["newpassword"] = newpass;
     QJsonObject mainobject;
@@ -92,5 +93,13 @@ void Forgot::on_pushButton_2_clicked()
     this->close();
     Login* lp = new Login();
     lp->show();
+}
+
+
+void Forgot::on_lineEdit_3_textChanged(const QString &arg1)
+{
+
+    username = arg1;
+
 }
 
