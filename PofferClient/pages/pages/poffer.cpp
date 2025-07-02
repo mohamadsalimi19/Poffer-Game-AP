@@ -12,19 +12,24 @@
 #include<QRandomGenerator>
 Poffer::Poffer(SocketManager* socket, QString username, QWidget *parent) :
     QWidget(parent),
-    ui(new Ui::Poffer),
-    client_socket(socket), // دریافت و نگه‌داری
-    username(username),
-    round{0} ,
-    num_pause{0},
+    client_socket(socket),
+    username(username), // دریافت و نگه‌داری
+    round{0},
+    num_pause{0} ,
     opScore("0"),
     playerScore{"0"},
-    time_warning{0}
+    time_warning{0},
+    ui(new Ui::Poffer)
 {
     ui->setupUi(this);
     this->setFixedSize(1300, 750);
     get_card();
     pause_button();
+    hiddenTimer = new QTimer(this);
+    visibleTimer = new QTimer(this);
+
+    hiddenTimer->setSingleShot(true);
+    visibleTimer->setSingleShot(false); // اگر تک‌شات نیست
    /* connect(this, &Poffer::turn_showed, this,[=](){
         QJsonObject payload;
         QJsonObject mainobject;
@@ -37,7 +42,7 @@ Poffer::Poffer(SocketManager* socket, QString username, QWidget *parent) :
         show_wait();
     });
 
-*/
+*/  overlayPAUSE = nullptr;
     connect(client_socket,&SocketManager::dataReceived,this,&Poffer::onServerResponse);
     connect(this, &Poffer::card_recived, this, &Poffer::choose_Card);
     connect(this,&Poffer::card_selected,this,&Poffer::show_wait);
@@ -72,39 +77,49 @@ void Poffer::paintEvent(QPaintEvent *event)
     QWidget::paintEvent(event);
 }
 
-void Poffer::game_resumedSLOT(){
-    overlayPAUSE->hide();
-    hiddenTimer->start(20000);
+void Poffer::game_pausedSLOT() {
+
+   // if (hiddenTimer && hiddenTimer->isActive()) hiddenTimer->stop();
+  //  if (visibleTimer && visibleTimer->isActive()) visibleTimer->stop();
+
+    qDebug() << "game stopped";
+
+    if (!overlayPAUSE) {
+        overlayPAUSE = new QWidget(this);
+        overlayPAUSE->setGeometry(this->rect());
+        overlayPAUSE->setStyleSheet("background-color: rgba(0, 0, 0, 150);");
+
+        QLabel* messageLabel = new QLabel("Opponent has stopped the game", overlayPAUSE);
+        messageLabel->setAlignment(Qt::AlignCenter);
+        messageLabel->setFixedSize(500, 100);
+        messageLabel->move((overlayPAUSE->width() - messageLabel->width()) / 2,
+                           (overlayPAUSE->height() - messageLabel->height()) / 2 - 50);
+        messageLabel->setStyleSheet(
+            "QLabel {"
+            "    color: white;"
+            "    background-color: rgba(0, 0, 0, 180);"
+            "    font: bold 24pt 'Segoe UI';"
+            "    border: 2px solid white;"
+            "    border-radius: 15px;"
+            "    padding: 15px;"
+            "}"
+            );
+    }
+
+    overlayPAUSE->show();
+    overlayPAUSE->raise();
 }
 
 
+void Poffer::game_resumedSLOT() {
+    if (overlayPAUSE != nullptr) {
+        overlayPAUSE->hide();
+        overlayPAUSE->deleteLater();
+        overlayPAUSE = nullptr;
+    }
 
-
-
-
-void Poffer::game_pausedSLOT(){
-    hiddenTimer->stop();
-    visibleTimer->stop();
-    overlayPAUSE = new QWidget(this);
-    overlayPAUSE->setGeometry(this->rect());
-    overlayPAUSE->setStyleSheet("background-color: rgba(0, 0, 0, 150);");
-    QLabel* messageLabel = new QLabel("Opponent has Stoped game", overlayPAUSE);
-    messageLabel->setAlignment(Qt::AlignCenter);
-    messageLabel->setFixedSize(500, 100);
-    messageLabel->move((overlayPAUSE->width() - messageLabel->width()) / 2,
-                       (overlayPAUSE->height() - messageLabel->height()) / 2 - 50);
-    messageLabel->setStyleSheet(
-        "QLabel {"
-        "    color: white;"
-        "    background-color: rgba(0, 0, 0, 180);"
-        "    font: bold 24pt 'Segoe UI';"
-        "    border: 2px solid white;"
-        "    border-radius: 15px;"
-        "    padding: 15px;"
-        "}"
-        );
-    messageLabel->show();
-
+  //  if (hiddenTimer && !hiddenTimer->isActive()) hiddenTimer->start(20000);
+ //   if (visibleTimer && !visibleTimer->isActive()) visibleTimer->start(1000);
 }
 
 
@@ -259,8 +274,8 @@ void Poffer::finish_round(const QVector<Card>& op_card, const QString& result, c
 
 void Poffer::pause_requset()
 {
-    hiddenTimer->stop();
-    visibleTimer->stop();
+   // hiddenTimer->stop();
+   // visibleTimer->stop();
     num_pause++;
 
     QJsonObject payload; // خالی
@@ -427,14 +442,41 @@ void Poffer::onServerResponse(QByteArray data){
         emit game_over(result);
     }
 
+    else if(obj["response"].toString()=="game_paused"){
+
+        emit game_paused();
+
+    }
+
+
+    else if(obj["response"].toString()=="game_resumed"){
+
+        emit game_resumed();
+
+    }
+
     else if(obj["response"].toString()=="opponent_disconnected"){
 
         emit op_disconnected();
 
-
-
     }
 
+    else if(obj["response"].toString()=="starter_info"){
+
+            QJsonObject payload = obj["payload"].toObject();
+
+            QString player1 = payload["player1_username"].toString();
+            QJsonObject player1_card_obj = payload["player1_card"].toObject();
+            Card player1_card = find_card(player1_card_obj["rank"].toString(), player1_card_obj["suit"].toString());
+
+            QString player2 = payload["player2_username"].toString();
+            QJsonObject player2_card_obj = payload["player2_card"].toObject();
+            Card player2_card = find_card(player2_card_obj["rank"].toString(), player2_card_obj["suit"].toString());
+
+            QString starter = payload["starter_username"].toString();
+            round_started(starter,player1_card,player2_card);
+
+    }
 
 
 }
@@ -775,8 +817,7 @@ void Poffer::choose_Card(QVector<Card> c, QString starter, bool a) {
     QPushButton *button7 = new QPushButton(this);
 
 
-    hiddenTimer = new QTimer(this);
-    visibleTimer = new QTimer(this);
+
     hiddenTimer->setSingleShot(true);
     hiddenTimer->start(20000); // ۲۰ ثانیه
 
@@ -793,7 +834,7 @@ void Poffer::choose_Card(QVector<Card> c, QString starter, bool a) {
     countdownLabel->setGeometry((this->width() - 200) / 2, 100, 200, 50);
     countdownLabel->hide();
 
-    // اگر ۲۰ ثانیه گذشت و انتخابی نشد، شمارش ۱۰ ثانیه‌ای با نمایش شروع شود
+    disconnect(hiddenTimer, &QTimer::timeout, nullptr, nullptr); // پاک کردن کانکشن قبلی برای جلوگیری از چندبار اجرا
     connect(hiddenTimer, &QTimer::timeout, this, [=]() mutable {
         countdownLabel->show();
         int remainingTime = 10;
@@ -812,7 +853,7 @@ void Poffer::choose_Card(QVector<Card> c, QString starter, bool a) {
             mn->show();
         }
         visibleTimer->start(1000);
-
+        disconnect(visibleTimer, &QTimer::timeout, nullptr, nullptr);
         connect(visibleTimer, &QTimer::timeout, this, [=]() mutable {
 
             remainingTime--;
@@ -1034,6 +1075,7 @@ void Poffer::choose_Card(QVector<Card> c, QString starter, bool a) {
     button4->move(20, 255);
     button4->show();
     animation(pos_4 , button4);
+
     connect(button4, &QPushButton::clicked, this, [=]() {
       //  QMessageBox::information(this, "Card Selected", "You selected: " + c[3].rank + " of " + c[3].suit);
         QJsonObject selected_card;
