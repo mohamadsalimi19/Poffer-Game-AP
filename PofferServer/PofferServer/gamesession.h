@@ -56,6 +56,7 @@ private:
 
     // inactive
     QTimer* m_inactivityTimer; // <<--- تایمر جدید
+    QTimer* m_warningTimer;
     QMap<Player*, int> m_inactivityStrikes; // <<--- ش
 
 public:
@@ -97,6 +98,7 @@ public slots:
 private slots:
     void onDisconnectTimerTimeout();
     void onInactivityTimeout(); // <<--- اسلات جدید برای تایمر عدم فعالیت
+    void onWarningTimerTimeout();
 };
 
 #endif // GAMESESSION_H

@@ -23,9 +23,16 @@ GameSession::GameSession(Player* player1, Player* player2, QObject *parent)
     connect(m_disconnectTimer, &QTimer::timeout, this, &GameSession::onDisconnectTimerTimeout);
 
     // --- بخش جدید: تنظیم تایمر عدم فعالیت ---
+    // ساخت و اتصال تایمر هشدار (۲۰ ثانیه)
+    m_warningTimer = new QTimer(this);
+    m_warningTimer->setSingleShot(true);
+    connect(m_warningTimer, &QTimer::timeout, this, &GameSession::onWarningTimerTimeout);
+
+    // ساخت و اتصال تایمر هشدار (3۰ ثانیه)
     m_inactivityTimer = new QTimer(this);
     m_inactivityTimer->setSingleShot(true);
     connect(m_inactivityTimer, &QTimer::timeout, this, &GameSession::onInactivityTimeout);
+
     m_inactivityStrikes[m_player1] = 0;
     m_inactivityStrikes[m_player2] = 0;
 }
@@ -104,7 +111,9 @@ void GameSession::sendDraftPoolToCurrentPlayer()
     emit sendMessageToPlayer(m_currentPlayerForDraft, response);
 
     //m_inactivityTimer->start(30000);
+    QMetaObject::invokeMethod(m_warningTimer, "start", Qt::QueuedConnection, Q_ARG(int, 20000));
     QMetaObject::invokeMethod(m_inactivityTimer, "start", Qt::QueuedConnection, Q_ARG(int, 30000));
+
     qDebug() << "Started 30s inactivity timer for" << m_currentPlayerForDraft->getUsername();
 }
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -610,3 +619,18 @@ void GameSession::onInactivityTimeout()
         }
     }
 }
+//////////////////////////////////////////////////////////////////////////////////////////
+// اسلات جدید برای ارسال هشدار بعد از ۲۰ ثانیه
+void GameSession::onWarningTimerTimeout()
+{
+    if (!m_currentPlayerForDraft) return;
+    qDebug() << "20s passed. Sending 10s warning to" << m_currentPlayerForDraft->getUsername();
+
+    QJsonObject payload;
+    payload["time_remaining"] = 10;
+    QJsonObject response;
+    response["response"] = "inactivity_warning";
+    response["payload"] = payload;
+    emit sendMessageToPlayer(m_currentPlayerForDraft, response);
+}
+
