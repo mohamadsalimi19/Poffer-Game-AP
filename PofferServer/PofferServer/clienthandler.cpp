@@ -102,16 +102,16 @@ void ClientHandler::processMessage(const QJsonObject& message)
      else if (command == "edit_profile") {
      handleEditProfile(payload);
     }
-    else if (command == "request_profile_data") {
+     else if (command == "request_profile_data") {
         handleRequestProfileData(payload);
     }
-    else if (command == "send_chat_message" && m_player) {
+     else if (command == "send_chat_message" && m_player) {
         emit chatMessageReceived(m_player, payload["message"].toString());
     }
-    else if (command == "timeout_lost") { // <<--- دستور جدید
+     else if (command == "timeout_lost") { // <<--- دستور جدید
         handleTimeoutLost(payload);
     }
-    else if (command == "stop_request") {
+     else if (command == "stop_request") {
         handleStopRequest(payload);
     } else if (command == "resume_request") {
         handleResumeRequest(payload);
@@ -353,7 +353,8 @@ void ClientHandler::handleStopRequest(const QJsonObject& /*payload*/) {
         QJsonObject payload;
         payload["pauser_username"] = m_player->getUsername();
         QJsonObject response{{"response", "game_paused"}, {"payload", payload}};
-        opponent->getHandler()->sendJson(response);
+        QMetaObject::invokeMethod(opponent->getHandler(), "sendJson", Qt::QueuedConnection,
+                                  Q_ARG(QJsonObject, response));
     }
 }
 //////////////////////////////////////////////////////////////////////////
@@ -363,7 +364,8 @@ void ClientHandler::handleResumeRequest(const QJsonObject& /*payload*/) {
     Player* opponent = m_gameSession->getOpponent(m_player);
     if (opponent && opponent->getHandler()) {
         QJsonObject response{{"response", "game_resumed"}};
-        opponent->getHandler()->sendJson(response);
+        QMetaObject::invokeMethod(opponent->getHandler(), "sendJson", Qt::QueuedConnection,
+                                  Q_ARG(QJsonObject, response));
     }
 }
 //////////////////////////////////////////////////////////////////////////

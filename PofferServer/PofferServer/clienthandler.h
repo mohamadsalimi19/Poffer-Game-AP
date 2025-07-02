@@ -5,6 +5,7 @@
 #include <QTcpSocket>
 #include <QJsonObject>
 #include "gamemanager.h"
+#include <QMetaObject>
 using namespace std;
 
 class Player;
