@@ -32,6 +32,8 @@ void GameSession::startNewRound()
     m_player2_hand.clear();
 
     if (m_round_number == 1) {
+        qWarning() << "///////////////////////////// ff ////////////////////";
+
         // for round 1
         qDebug() << "Round 1: Determining starter with Diamond cards...";
         Deck starterDeck;
@@ -48,6 +50,25 @@ void GameSession::startNewRound()
             m_currentPlayerForDraft = m_player2;
         }
 
+        //make json for babak
+        QJsonObject payload;
+        payload["player1_username"] = m_player1->getUsername();
+        payload["player1_card"] = card1.toJson();
+        payload["player2_username"] = m_player2->getUsername();
+        payload["player2_card"] = card2.toJson();
+        payload["starter_username"] = m_currentPlayerForDraft->getUsername();
+
+        QJsonObject response{{"response", "starter_info"}, {"payload", payload}};
+
+        qWarning() << "///////////////////////////// ff ////////////////////";
+
+        //send message
+        emit sendMessageToPlayer(m_player1, response);
+        emit sendMessageToPlayer(m_player2, response);
+
+        qWarning() << "///////////////////////////// start delay  ////////////////////";
+        QTimer::singleShot(5000, this, &GameSession::startDraftingPhase);
+
     } else {
         // another rounds
         // update current player
@@ -56,6 +77,8 @@ void GameSession::startNewRound()
     }
 
     qDebug() << m_currentPlayerForDraft->getUsername() << "will start the drafting phase.";
+
+
 
     qDebug() << "Preparing a new full deck for the round...";
     m_deck = Deck();
