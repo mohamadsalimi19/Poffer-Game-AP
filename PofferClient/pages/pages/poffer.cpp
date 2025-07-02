@@ -45,6 +45,7 @@ Poffer::Poffer(SocketManager* socket, QString username, QWidget *parent) :
     connect(this,&Poffer::game_over,this,&Poffer::finish_game);
     connect(pauseButton,&QPushButton::clicked,this,&Poffer::pause_requset);
     connect(this,&Poffer::op_disconnected,this,&Poffer::opponent_disconnected_show);
+    connect(this,&Poffer::game_paused,this,&Poffer::game_pausedSLOT);
 
 
     if(num_pause>=2){
@@ -69,41 +70,33 @@ void Poffer::paintEvent(QPaintEvent *event)
     painter.drawPixmap(this->rect(), pixmap);
     QWidget::paintEvent(event);
 }
-void Poffer::delayWithEventLoop(int second , QLabel* p_lable , QLabel* o_lable){
-    QEventLoop loop;
-    QTimer::singleShot(second, &loop, &QEventLoop::quit);
-    p_lable->hide();
-    o_lable->hide();
-    loop.exec();
-}
 
-void Poffer::start_round(){
-    if(round==2){
-        QString starter;
-        Card player_startcard;
-        Card opp_startcard;
-        choose_turn(starter,player_startcard,opp_startcard);
-        show_turn(player_startcard,opp_startcard);
-    }
-    else{
-        QByteArray t;
-    }
+void Poffer::game_resumedSLOT(){
+
+
+
+
+
+
+
+
+
 }
 
 
 
-void Poffer::opponent_disconnected_show(){
-    QWidget* overlay = new QWidget(this);
-    overlay->setGeometry(this->rect());
-    overlay->setStyleSheet("background-color: rgba(0, 0, 0, 150);");
-    overlay->show();
 
-    QLabel* messageLabel = new QLabel("Opponent has paused the game", overlay);
+
+
+void Poffer::game_pausedSLOT(){
+    overlayPAUSE = new QWidget(this);
+    overlayPAUSE->setGeometry(this->rect());
+    overlayPAUSE->setStyleSheet("background-color: rgba(0, 0, 0, 150);");
+    QLabel* messageLabel = new QLabel("Opponent has Stoped game", overlayPAUSE);
     messageLabel->setAlignment(Qt::AlignCenter);
     messageLabel->setFixedSize(500, 100);
-    messageLabel->move((overlay->width() - messageLabel->width()) / 2,
-                       (overlay->height() - messageLabel->height()) / 2);
-
+    messageLabel->move((overlayPAUSE->width() - messageLabel->width()) / 2,
+                       (overlayPAUSE->height() - messageLabel->height()) / 2 - 50);
     messageLabel->setStyleSheet(
         "QLabel {"
         "    color: white;"
@@ -115,6 +108,7 @@ void Poffer::opponent_disconnected_show(){
         "}"
         );
     messageLabel->show();
+
 }
 
 
@@ -123,6 +117,67 @@ void Poffer::opponent_disconnected_show(){
 
 
 
+
+
+void Poffer::opponent_disconnected_show(){
+    QWidget* overlay = new QWidget(this);
+    overlay->setGeometry(this->rect());
+    overlay->setStyleSheet("background-color: rgba(0, 0, 0, 150);");
+    overlay->show();
+
+    QLabel* messageLabel = new QLabel("Opponent has disconnected", overlay);
+    messageLabel->setAlignment(Qt::AlignCenter);
+    messageLabel->setFixedSize(500, 100);
+    messageLabel->move((overlay->width() - messageLabel->width()) / 2,
+                       (overlay->height() - messageLabel->height()) / 2 - 50);
+    messageLabel->setStyleSheet(
+        "QLabel {"
+        "    color: white;"
+        "    background-color: rgba(0, 0, 0, 180);"
+        "    font: bold 24pt 'Segoe UI';"
+        "    border: 2px solid white;"
+        "    border-radius: 15px;"
+        "    padding: 15px;"
+        "}"
+        );
+    messageLabel->show();
+
+    QLabel* countdownLabel = new QLabel(overlay);
+    countdownLabel->setAlignment(Qt::AlignCenter);
+    countdownLabel->setFixedSize(200, 80);
+    countdownLabel->move((overlay->width() - countdownLabel->width()) / 2,
+                         (overlay->height() - countdownLabel->height()) / 2 + 50);
+    countdownLabel->setStyleSheet(
+        "QLabel {"
+        "    color: yellow;"
+        "    background-color: rgba(0, 0, 0, 180);"
+        "    font: bold 20pt 'Segoe UI';"
+        "    border-radius: 10px;"
+        "    padding: 10px;"
+        "}"
+        );
+    countdownLabel->show();
+
+    int remainingTime = 60;
+    countdownLabel->setText(QString::number(remainingTime));
+
+    QTimer* waitTimer = new QTimer(this);
+    waitTimer->start(1000); // هر ثانیه یکبار
+    connect(waitTimer, &QTimer::timeout, this, [=]() mutable {
+        remainingTime--;
+        countdownLabel->setText(QString::number(remainingTime));
+
+        if (remainingTime <= 0) {
+            waitTimer->stop();
+            overlay->hide();
+            overlay->deleteLater();
+
+
+
+
+        }
+    });
+}
 
 
 
@@ -144,6 +199,8 @@ void Poffer::resetBoardForNewRound()
     // ۳. خالی کردن داده‌های دست فعلی بازیکن
     myhand.clear();
 }
+
+
 
 void Poffer::finish_round(const QVector<Card>& op_card, const QString& result, const QString& my_hand_rank, const QString& opponent_hand_rank, const QString& my_score, const QString& opponent_score)
 {
@@ -206,12 +263,13 @@ void Poffer::finish_round(const QVector<Card>& op_card, const QString& result, c
 
 void Poffer::pause_requset()
 {
+    hiddenTimer->stop();
+    visibleTimer->stop();
     num_pause++;
-
 
     QJsonObject payload; // خالی
     QJsonObject mainObject;
-    mainObject["command"] = "pause_request";
+    mainObject["command"] = "stop_request";
     mainObject["payload"] = payload;
     QJsonDocument doc(mainObject);
     QByteArray dataToSend = doc.toJson(QJsonDocument::Compact);
@@ -245,9 +303,11 @@ void Poffer::pause_requset()
     resumeButton->show();
 
     connect(resumeButton, &QPushButton::clicked, this, [=]() {
+        hiddenTimer->start(20000);
+        visibleTimer->start(20000);
         QJsonObject payload; // خالی
         QJsonObject mainObject;
-        mainObject["command"] = "Resume_request";
+        mainObject["command"] = "resume_request";
         mainObject["payload"] = payload;
         QJsonDocument doc(mainObject);
         QByteArray dataToSend = doc.toJson(QJsonDocument::Compact);
@@ -258,7 +318,6 @@ void Poffer::pause_requset()
         pauseButton->hide();
         pauseButton->deleteLater();
         }
-
     });
     QPushButton* exitButton = new QPushButton("Exit Game", overlay);
     exitButton->setFixedSize(200, 80);
@@ -720,8 +779,8 @@ void Poffer::choose_Card(QVector<Card> c, QString starter, bool a) {
     QPushButton *button7 = new QPushButton(this);
 
 
-    QTimer* hiddenTimer = new QTimer(this);
-    QTimer* visibleTimer = new QTimer(this);
+    hiddenTimer = new QTimer(this);
+    visibleTimer = new QTimer(this);
     hiddenTimer->setSingleShot(true);
     hiddenTimer->start(20000); // ۲۰ ثانیه
 
