@@ -35,6 +35,7 @@ private:
     void handleSelectCard(const QJsonObject& payload);
     void handleEditProfile(const QJsonObject& payload);
     void handleRequestProfileData(const QJsonObject& payload);
+    void handleTimeoutLost(const QJsonObject& payload);
     // values
     qintptr m_socketDescriptor; // a pointer
     QTcpSocket* m_socket = nullptr;
