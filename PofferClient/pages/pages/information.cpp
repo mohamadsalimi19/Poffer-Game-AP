@@ -6,7 +6,8 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <signup.h>
-
+#include<QMessageBox>
+#include<QTimer>
 information::information(QString user, SocketManager* s, QWidget *parent)
     : QWidget(parent),
     ui(new Ui::information),
@@ -21,6 +22,8 @@ information::information(QString user, SocketManager* s, QWidget *parent)
     getINFO();
     this->setFixedSize(this->width(), this->height());
 }
+bool messageBoxShown = false;
+
 
 void information::enter_filds() {
     ui->textBrowser->setText(username);
@@ -50,7 +53,7 @@ void information::getINFO() {
     json_to_send = doc.toJson(QJsonDocument::Compact);
     mys->sendData(json_to_send);
 }
-
+/*
 void information::ServerResponse(QByteArray data) {
     QJsonDocument doc = QJsonDocument::fromJson(data);
     if (!doc.isObject()) return;
@@ -64,18 +67,57 @@ void information::ServerResponse(QByteArray data) {
         lastname = payload["lastname"].toString();
         gmail = payload["gmail"].toString();
         phone_num = payload["phone_number"].toString();
-
         emit dataRECIVED();
     }
 
 
     else if(obj["response"].toString() == "profile_update_success"){
+        QMessageBox::warning(nullptr,"information",obj["response"].toString() );
         update_ui();
     }
 
 
+    else{
+    QMessageBox::warning(nullptr,"information",obj["response"].toString() );
+    }
 
 }
+*/
+
+void information::ServerResponse(QByteArray data) {
+    QJsonDocument doc = QJsonDocument::fromJson(data);
+    if (!doc.isObject()) return;
+    QJsonObject obj = doc.object();
+
+    QString responseType = obj["response"].toString();
+
+    if (responseType == "profile_data_response") {
+        QJsonObject payload = obj["payload"].toObject();
+        username = payload["username"].toString();
+        pass = payload["password_hash"].toString();
+        name = payload["name"].toString();
+        lastname = payload["lastname"].toString();
+        gmail = payload["gmail"].toString();
+        phone_num = payload["phone_number"].toString();
+        emit dataRECIVED();
+    }
+    else if (responseType == "profile_update_success") {
+        if (!messageBoxShown) {
+            QMessageBox::information(this, "Information", "Profile updated successfully.");
+            messageBoxShown = true;
+            QTimer::singleShot(1500, this, [this](){ messageBoxShown = false; }); // ریست بعد از 1.5 ثانیه
+        }
+        update_ui();
+    }
+    else {
+        if (!messageBoxShown) {
+            QMessageBox::warning(this, "Information", "Response: " + responseType);
+            messageBoxShown = true;
+            QTimer::singleShot(1500, this, [this](){ messageBoxShown = false; }); // ریست بعد از 1.5 ثانیه
+        }
+    }
+}
+
 
 bool information::read_json(QByteArray res) {
     auto doc = QJsonDocument::fromJson(res);
@@ -106,11 +148,8 @@ void information::on_pushButton_clicked() {
     mainobject["payload"] = payload;
 
     json_to_send = QJsonDocument(mainobject).toJson(QJsonDocument::Compact);
+    mys->sendData(json_to_send);
 
-    if (update()) {
-        username = newusername;
-        emit dataRECIVED();
-    }
 }
 
 // --------------------- نام ---------------------
@@ -120,8 +159,11 @@ void information::on_lineEdit_5_textEdited(const QString &arg1) {
 }
 
 void information::on_pushButton_6_clicked() {
-    if (newname.isEmpty()) return;
+    if (newname.isEmpty()){
+        QMessageBox::warning(nullptr,"information","please enter your stata" );
 
+        return;
+    }
     QJsonObject payload;
     payload["name"] = newname;
 
@@ -130,11 +172,9 @@ void information::on_pushButton_6_clicked() {
     mainobject["payload"] = payload;
 
     json_to_send = QJsonDocument(mainobject).toJson(QJsonDocument::Compact);
+    mys->sendData(json_to_send);
 
-    if (update()) {
-        name = newname;
-        emit dataRECIVED();
-    }
+
 }
 
 // --------------------- نام خانوادگی ---------------------
@@ -144,8 +184,11 @@ void information::on_lineEdit_4_textEdited(const QString &arg1) {
 }
 
 void information::on_pushButton_3_clicked() {
-    if (newlastname.isEmpty()) return;
+    if (newlastname.isEmpty()){
+        QMessageBox::warning(nullptr,"information","please enter your stata" );
 
+        return;
+    }
     QJsonObject payload;
     payload["lastname"] = newlastname;
 
@@ -154,11 +197,9 @@ void information::on_pushButton_3_clicked() {
     mainobject["payload"] = payload;
 
     json_to_send = QJsonDocument(mainobject).toJson(QJsonDocument::Compact);
+    mys->sendData(json_to_send);
 
-    if (update()) {
-        lastname = newlastname;
-        emit dataRECIVED();
-    }
+
 }
 
 // --------------------- پسورد ---------------------
@@ -168,21 +209,21 @@ void information::on_lineEdit_2_textEdited(const QString &arg1) {
 }
 
 void information::on_pushButton_4_clicked() {
-    if (newpass.isEmpty()) return;
-
+    if (newpass.isEmpty()){
+        QMessageBox::warning(nullptr,"information","please enter your fild" );
+        return;
+    }
     QJsonObject payload;
-    payload["pass"] = newpass;
+    payload["password_hash"] = newpass;
 
     QJsonObject mainobject;
     mainobject["command"] = "edit_profile";
     mainobject["payload"] = payload;
 
     json_to_send = QJsonDocument(mainobject).toJson(QJsonDocument::Compact);
+    mys->sendData(json_to_send);
 
-    if (update()) {
-        pass = newpass;
-        emit dataRECIVED();
-    }
+
 }
 
 // --------------------- ایمیل ---------------------
@@ -192,8 +233,11 @@ void information::on_lineEdit_6_textEdited(const QString &arg1) {
 }
 
 void information::on_pushButton_5_clicked() {
-    if (!isValidEmail(newgmail)) return;
+    if (!isValidEmail(newgmail)){
+        QMessageBox::warning(nullptr,"information","please enter corect email" );
 
+        return;
+    }
     QJsonObject payload;
     payload["gmail"] = newgmail;
 
@@ -202,11 +246,9 @@ void information::on_pushButton_5_clicked() {
     mainobject["payload"] = payload;
 
     json_to_send = QJsonDocument(mainobject).toJson(QJsonDocument::Compact);
+    mys->sendData(json_to_send);
 
-    if (update()) {
-        gmail = newgmail;
-        emit dataRECIVED();
-    }
+
 }
 
 // --------------------- شماره تلفن ---------------------
@@ -216,8 +258,11 @@ void information::on_lineEdit_textEdited(const QString &arg1) {
 }
 
 void information::on_pushButton_2_clicked() {
-    if (!isValidIranPhoneNumber(newphone_num)) return;
+    if (!isValidIranPhoneNumber(newphone_num)){
+        QMessageBox::warning(nullptr,"information","please enter correct phone num" );
 
+        return;
+    }
     QJsonObject payload;
     payload["phone_number"] = newphone_num;
 
@@ -226,11 +271,8 @@ void information::on_pushButton_2_clicked() {
     mainobject["payload"] = payload;
 
     json_to_send = QJsonDocument(mainobject).toJson(QJsonDocument::Compact);
+    mys->sendData(json_to_send);
 
-    if (update()) {
-        phone_num = newphone_num;
-        emit dataRECIVED();
-    }
 }
 
 // --------------------- بازگشت به منو ---------------------
