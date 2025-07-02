@@ -61,15 +61,7 @@ public:
     void finish_game(QString result);
     void pause_button();
     void pause_requset();
-<<<<<<< Updated upstream
     void resetBoardForNewRound();
-=======
-<<<<<<< HEAD
-    void game_paused();
-=======
-    void resetBoardForNewRound();
->>>>>>> efbcb5e38d052e5e94d94305a5a2353cf9eb492e
->>>>>>> Stashed changes
 
 private slots:
 
@@ -81,7 +73,6 @@ signals:
     void card_selected();
     void round_result(QVector<Card> , QString result ,QString my_hand_rank , QString opponent_hand_rank , QString my_score , QString opponent_score);
     void game_over(QString result);
-    //void game_paused();
 private:
     Ui::Poffer *ui;
 };

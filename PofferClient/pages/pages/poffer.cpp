@@ -41,6 +41,10 @@ Poffer::Poffer(SocketManager* socket, QString username, QWidget *parent) :
     connect(pauseButton,&QPushButton::clicked,this,&Poffer::pause_requset);
 
 
+
+
+
+
     show_myhand();
     show_point();
 
@@ -97,30 +101,15 @@ void Poffer::resetBoardForNewRound()
 
 void Poffer::finish_round(const QVector<Card>& op_card, const QString& result, const QString& my_hand_rank, const QString& opponent_hand_rank, const QString& my_score, const QString& opponent_score)
 {
-<<<<<<< Updated upstream
     // ۱. نمایش کارت‌های دست
     round = 0;
     int cardWidth = 130;
     int cardHeight = 180;
-=======
-    // ۱. نمایش کارت‌های دست حریف
-    int cardWidth = 130;
-    int cardHeight = 180;
-<<<<<<< HEAD
-    for (int i = 0; i < 5 && i < op_card.size(); i++) {
-        op_cards_place[i]->setIcon(QIcon(op_card[i].imagePath));
-        op_cards_place[i]->setIconSize(QSize(cardWidth, cardHeight));
-=======
->>>>>>> Stashed changes
     for (int i = 0; i < 5 && i < op_card.size(); ++i) {
         if (op_cards_place.size() > i && op_cards_place[i]) {
             op_cards_place[i]->setIcon(QIcon(op_card[i].imagePath));
             op_cards_place[i]->setIconSize(QSize(cardWidth, cardHeight));
         }
-<<<<<<< Updated upstream
-=======
->>>>>>> efbcb5e38d052e5e94d94305a5a2353cf9eb492e
->>>>>>> Stashed changes
     }
 
     // ۲. آپدیت کردن امتیازات
@@ -148,59 +137,33 @@ void Poffer::finish_round(const QVector<Card>& op_card, const QString& result, c
     opponent_hand_rank_show->setStyleSheet("color: white; background-color: rgba(0, 0, 0, 0.6); font: 14pt; padding: 5px;");
     opponent_hand_rank_show->setGeometry(400, 410, 500, 40);
     opponent_hand_rank_show->show();
-<<<<<<< HEAD
-=======
 
     // ۴. شروع یک تایمر برای پاکسازی صفحه بعد از چند ثانیه
-<<<<<<< Updated upstream
-=======
->>>>>>> efbcb5e38d052e5e94d94305a5a2353cf9eb492e
->>>>>>> Stashed changes
     QTimer::singleShot(6000, this, [=]() {
         // مخفی کردن و حذف لیبل‌های موقتی
         result_show->deleteLater();
         my_hand_rank_show->deleteLater();
         opponent_hand_rank_show->deleteLater();
-<<<<<<< Updated upstream
-=======
-<<<<<<< HEAD
-        show_myhand();
-=======
->>>>>>> Stashed changes
 
         // تمیز کردن صفحه بازی برای راند بعدی
         resetBoardForNewRound();
 
         // اعلام آمادگی برای شروع راند بعدی
         // این سیگنال می‌تواند باعث شود کلاینت دوباره درخواست بازی بدهد یا منتظر پیام سرور بماند
-<<<<<<< Updated upstream
        // myhand.clear();
        // player_cards_place.clear();
        // op_cards_place.clear();
         round = 0;
-=======
-        myhand.clear();
-        player_cards_place.clear();
-        op_cards_place.clear();
->>>>>>> efbcb5e38d052e5e94d94305a5a2353cf9eb492e
->>>>>>> Stashed changes
         emit turn_showed();
     });
-
 }
 
 void Poffer::pause_requset()
 {
-
-    QJsonObject request;
-    request["command"] = "pause_request";
-    request["payload"] = QJsonObject(); // یا می‌توانی حذف کنی
-    QByteArray data = QJsonDocument(request).toJson(QJsonDocument::Compact);
-    client_socket->sendData(data);
-
-
-
     QWidget* overlay = nullptr;
+
+   // جلوگیری از اضافه کردن چندباره
+
     overlay = new QWidget(this);
     overlay->setGeometry(this->rect());
     overlay->setStyleSheet("background-color: rgba(0, 0, 0, 150);");
@@ -263,6 +226,9 @@ void Poffer::pause_requset()
 
 
 }
+
+
+
 void Poffer::onServerResponse(QByteArray data){
     /*
     if (waiting_label) {
@@ -323,12 +289,14 @@ void Poffer::onServerResponse(QByteArray data){
         emit round_result(opponent_hand,result,my_hand_rank,opponent_hand_rank,my_score,opponent_score);
     }
 
-    else if(obj["response"].toString()=="game_paused"){
-
-    }
-
     else if(obj["response"].toString()=="game_over"){
-        emit game_paused();
+        auto payload =  obj["payload"].toObject();
+        QString result = payload["result"].toString();
+        QString Reson = payload["reson"].toString();
+        emit game_over(result);
+
+
+
     }
 
 
@@ -481,8 +449,6 @@ void Poffer::animation(QPoint final_pos , QPushButton* button){
 }
 
 void Poffer::pause_button(){
-
-
     QPushButton* ps = new QPushButton();
     pauseButton = new QPushButton(this);
     pauseButton->setIcon(QIcon(":/icons/pause.png")); // اگر ایکون داری
@@ -513,7 +479,6 @@ void Poffer::choose_Card(QVector<Card> c, QString starter, bool a)
         }
     }
 
-<<<<<<< Updated upstream
     int cardWidth = 130;
     int cardHeight = 180;
     int spacing = 20;
@@ -575,78 +540,8 @@ void Poffer::choose_Card(QVector<Card> c, QString starter, bool a)
 }
 
 */
-=======
-void Poffer::choose_Card(QVector<Card> c, QString starter, bool a)
-{
-    // اگر دکمه‌های قدیمی از انتخاب قبلی وجود دارند، آنها را پاک می‌کنیم
-    for (auto* button : findChildren<QPushButton*>()) {
-        if (button->property("is_selection_card").toBool()) {
-            button->deleteLater();
-        }
-    }
->>>>>>> Stashed changes
 
-    int cardWidth = 130;
-    int cardHeight = 180;
-    int spacing = 20;
-    int totalWidth = c.size() * cardWidth + (c.size() - 1) * spacing;
-    int startX = (this->width() - totalWidth) / 2;
-    int y = (this->height() - cardHeight) / 2;
-
-    // با یک حلقه، برای هر کارت یک دکمه می‌سازیم
-    for (int i = 0; i < c.size(); ++i) {
-        QPushButton* button = new QPushButton(this);
-        button->setProperty("is_selection_card", true); // یک مشخصه برای شناسایی این دکمه‌ها
-
-        Card currentCard = c[i]; // کارت مربوط به این دکمه
-
-        button->setIcon(QIcon(currentCard.imagePath));
-        button->setIconSize(QSize(cardWidth, cardHeight));
-        button->setFixedSize(cardWidth, cardHeight);
-        button->move(startX + i * (cardWidth + spacing), y);
-        button->show();
-
-        // برای هر دکمه یک connect جداگانه با استفاده از لامبدا می‌نویسیم
-        connect(button, &QPushButton::clicked, this, [=]() {
-            qDebug() << "Card selected:" << currentCard.rank;
-
-            // ۱. کارت انتخاب شده را به دست بازیکن اضافه می‌کنیم
-            myhand.append(currentCard);
-
-            // ۲. تصویر کارت را در جایگاه صحیح دست نهایی قرار می‌دهیم
-            // اندیس صحیح، سایز فعلی دست قبل از اضافه کردن کارت جدید است
-            int handIndex = myhand.size() - 1;
-            if(handIndex < player_cards_place.size()) {
-                player_cards_place[handIndex]->setIcon(QIcon(currentCard.imagePath));
-                player_cards_place[handIndex]->setIconSize(QSize(cardWidth, cardHeight));
-            }
-
-            // ۳. پیام را برای سرور می‌سازیم و ارسال می‌کنیم
-            QJsonObject card_obj = currentCard.toJson();
-            QJsonObject payload;
-            payload["selected_card"] = card_obj;
-            QJsonObject mainobject;
-            mainobject["command"] = "select_card";
-            mainobject["payload"] = payload;
-
-            QJsonDocument doc(mainobject);
-            client_socket->sendData(doc.toJson(QJsonDocument::Compact));
-
-            // ۴. تمام دکمه‌های انتخاب کارت را از صفحه حذف می‌کنیم
-            for (auto* btn : findChildren<QPushButton*>()) {
-                if (btn->property("is_selection_card").toBool()) {
-                    btn->hide();
-                    btn->deleteLater();
-                }
-            }
-
-            // ۵. سیگنال می‌دهیم که انتخاب انجام شد
-            emit card_selected();
-        });
-    }
-}
-
-/*void Poffer::choose_Card(QVector<Card> c, QString starter, bool a) {
+void Poffer::choose_Card(QVector<Card> c, QString starter, bool a) {
     for(auto a:c){
 
         qDebug()<<a.suit;
@@ -1025,7 +920,7 @@ void Poffer::choose_Card(QVector<Card> c, QString starter, bool a)
         });
     }
 
-}*/
+}
 
 
 
