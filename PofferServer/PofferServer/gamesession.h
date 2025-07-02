@@ -11,6 +11,7 @@
 
 using namespace std ;
 
+
 class GameSession_exception: public exception {
 public:
     GameSession_exception(const char * st) : exception(st) {}

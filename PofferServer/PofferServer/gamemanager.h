@@ -12,7 +12,7 @@ class GameManager : public QObject
 {
     Q_OBJECT
 
-private slots: // <<--- یک بخش جدید برای اسلات‌های خصوصی
+private slots:
     void createNewGame(Player* player1, Player* player2);
 
 private:
