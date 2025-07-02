@@ -34,7 +34,7 @@ public:
     void make_json();
     bool read_json(QByteArray ar);
     bool update();
-    explicit information(QWidget *parent = nullptr);
+    explicit information(QString user, SocketManager* s  ,QWidget *parent = nullptr);
     ~information();
 
 private slots:

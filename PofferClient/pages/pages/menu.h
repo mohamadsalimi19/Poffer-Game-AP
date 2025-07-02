@@ -20,7 +20,7 @@ class menu : public QWidget
 
 public:
     void set(QString username,QString name,QString lastname, QString gmail,QString phone_num , QString pass , SocketManager* s);
-    explicit menu(QWidget *parent = nullptr);
+    explicit menu( QString userna , SocketManager* s , QWidget *parent = nullptr );
     ~menu();
 
 protected:

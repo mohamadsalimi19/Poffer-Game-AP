@@ -5,12 +5,14 @@
 #include<QPushButton>
 #include<information.h>
 #include"start.h"
-menu::menu(QWidget *parent)
+menu::menu(  QString user , SocketManager* s , QWidget *parent)
     : QWidget(parent)
     , ui(new Ui::menu)
+
 {
 
-
+    username = user;
+    mysocket = s;
     ui->setupUi(this);
     this->setFixedSize(this->width(), this->height());
     ui->label->setStyleSheet(R"(
@@ -155,7 +157,7 @@ void menu::set(QString user,QString nam,QString lastnam, QString gmai,QString ph
 
 void menu::on_pushButton_3_clicked()
 {
-    information* inft = new information();
+    information* inft = new information(username , mysocket);
     inft->set(username,name,lastname,gmail,phone_num,password,mysocket);
     this->close();
     inft->show();
