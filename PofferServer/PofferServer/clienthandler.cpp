@@ -118,6 +118,9 @@ void ClientHandler::processMessage(const QJsonObject& message)
     } else if (command == "pause_timeout") {
         handlePauseTimeout(payload);
     }
+    else if (command == "forgot_password") {
+        handleForgotPassword(payload);
+    }
     // TODO: دستورات دیگر مثل انتخاب کارت و ... را هم اینجا اضافه کن
 }
 //////////////////////////////////////////////////////////////////////////
@@ -378,3 +381,22 @@ void ClientHandler::handlePauseTimeout(const QJsonObject& /*payload*/) {
     }
 }
 //////////////////////////////////////////////////////////////////////////
+void ClientHandler::handleForgotPassword(const QJsonObject& payload)
+{
+    QString username = payload["username"].toString();
+    QString phone = payload["phone_number"].toString();
+    QString newPassHash = payload["new_password_hash"].toString();
+
+    bool success = UserManager::instance()->resetPassword(username, phone, newPassHash);
+
+    QJsonObject response;
+    if (success) {
+        response["response"] = "password_reset_success";
+    } else {
+        QJsonObject errorPayload;
+        errorPayload["message"] = "Username or phone number is incorrect.";
+        response["response"] = "password_reset_error";
+        response["payload"] = errorPayload;
+    }
+    sendJson(response);
+}

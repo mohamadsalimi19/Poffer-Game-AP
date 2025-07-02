@@ -40,6 +40,7 @@ private:
     void handleStopRequest(const QJsonObject& payload);
     void handleResumeRequest(const QJsonObject& payload);
     void handlePauseTimeout(const QJsonObject& payload);
+    void handleForgotPassword(const QJsonObject& payload);
     // values
     qintptr m_socketDescriptor; // a pointer
     QTcpSocket* m_socket = nullptr;
