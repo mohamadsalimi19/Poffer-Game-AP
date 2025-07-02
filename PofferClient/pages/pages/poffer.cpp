@@ -701,13 +701,14 @@ void Poffer::choose_Card(QVector<Card> c, QString starter, bool a) {
         int remainingTime = 10;
         countdownLabel->setText(QString::number(remainingTime));
         time_warning++;
-        if(time_warning>3){
-
-            // یه جیسون باید بفرستم
-            //
-            ///
-            ///
-            ///
+        if(time_warning>=2){
+            QJsonObject playload;
+            QJsonObject mainobject;
+            mainobject["command"] = "timeout_lost";
+            mainobject["payload"] = playload;
+            QJsonDocument doc(mainobject);
+            auto json_to_send = doc.toJson(QJsonDocument::Compact);
+            client_socket->sendData(json_to_send);
             menu* mn = new menu(username,client_socket);
             this->close();
             mn->show();
