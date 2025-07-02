@@ -158,7 +158,6 @@ void menu::set(QString user,QString nam,QString lastnam, QString gmai,QString ph
 void menu::on_pushButton_3_clicked()
 {
     information* inft = new information(username , mysocket);
-    inft->set(username,name,lastname,gmail,phone_num,password,mysocket);
     this->close();
     inft->show();
 }
