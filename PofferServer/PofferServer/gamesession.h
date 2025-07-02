@@ -27,7 +27,7 @@ class GameSession : public QObject
 private:
     void startDraftingPhase(); // start sharing cards
     void sendDraftPoolToCurrentPlayer(); // give 7 card to current palyer
-    void endGame(Player* winner, const QString& reason);
+    //void endGame(Player* winner, const QString& reason);
     void onDisconnectTimerTimeout();
 
     Player* breakTie(const Hand& hand1, const Hand& hand2, HandEvaluator::HandRank rank); // if 2 hand is equal chek it in herre
@@ -79,6 +79,8 @@ public:
     void reconnectPlayer(Player* player);
 
     Player* getOpponent(Player* player) const;
+
+    void endGame(Player* winner, const QString& reason);
 
 signals:
     void gameFinished(GameSession* session);

@@ -108,6 +108,9 @@ void ClientHandler::processMessage(const QJsonObject& message)
     else if (command == "send_chat_message" && m_player) {
         emit chatMessageReceived(m_player, payload["message"].toString());
     }
+    else if (command == "timeout_lost") { // <<--- دستور جدید
+        handleTimeoutLost(payload);
+    }
     // TODO: دستورات دیگر مثل انتخاب کارت و ... را هم اینجا اضافه کن
 }
 //////////////////////////////////////////////////////////////////////////
@@ -313,4 +316,23 @@ void ClientHandler::handleRequestProfileData(const QJsonObject& /*payload*/)
     response["payload"] = m_player->toJson();
 
     sendJson(response);
+}
+//////////////////////////////////////////////////////////////////////////
+void ClientHandler::handleTimeoutLost(const QJsonObject& /*payload*/)
+{
+    // اگر بازیکن در بازی نباشد، این دستور بی‌معنی است
+    if (!m_player || !m_gameSession) {
+        qWarning() << "Received a timeout_lost command from a player not in a game.";
+        return;
+    }
+
+    qDebug() << "Player" << m_player->getUsername() << "lost on time (2nd strike). Ending game.";
+
+    // ۱. حریف این بازیکن را پیدا می‌کنیم
+    Player* winner = m_gameSession->getOpponent(m_player);
+
+    // ۲. بازی را به نفع حریف تمام می‌کنیم
+    if (winner) {
+        m_gameSession->endGame(winner, "Opponent timed out (2nd strike).");
+    }
 }
