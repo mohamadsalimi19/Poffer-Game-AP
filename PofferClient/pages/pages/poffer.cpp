@@ -9,12 +9,17 @@
 #include<QEventLoop>
 #include"QMetaObject"
 #include"menu.h"
+#include<QRandomGenerator>
 Poffer::Poffer(SocketManager* socket, QString username, QWidget *parent) :
     QWidget(parent),
     ui(new Ui::Poffer),
     client_socket(socket), // دریافت و نگه‌داری
     username(username),
-    round{0}
+    round{0} ,
+    num_pause{0},
+    opScore("0"),
+    playerScore{"0"},
+    time_warning{0}
 {
     ui->setupUi(this);
     this->setFixedSize(1300, 750);
@@ -39,7 +44,9 @@ Poffer::Poffer(SocketManager* socket, QString username, QWidget *parent) :
     connect(this,&Poffer::round_result,this,&Poffer::finish_round);
     connect(this,&Poffer::game_over,this,&Poffer::finish_game);
     connect(pauseButton,&QPushButton::clicked,this,&Poffer::pause_requset);
-
+    if(num_pause>=2){
+        pauseButton->setEnabled(false);
+    }
 
 
 
@@ -50,7 +57,8 @@ Poffer::Poffer(SocketManager* socket, QString username, QWidget *parent) :
 
 }
 bool finish_turn = false;
-
+int score_me = 0;
+int score_op = 0;
 void Poffer::paintEvent(QPaintEvent *event)
 {
     QPainter painter(this);
@@ -137,15 +145,15 @@ void Poffer::finish_round(const QVector<Card>& op_card, const QString& result, c
     opponent_hand_rank_show->setStyleSheet("color: white; background-color: rgba(0, 0, 0, 0.6); font: 14pt; padding: 5px;");
     opponent_hand_rank_show->setGeometry(400, 410, 500, 40);
     opponent_hand_rank_show->show();
-
-    // ۴. شروع یک تایمر برای پاکسازی صفحه بعد از چند ثانیه
+    //my_point_labale->setText();
+    qDebug()<<my_score<<"heeeeey";
+    my_point_labale->setText("Your Score: " + QString::number(score_me));
+    op_point_labale->setText("Opponent Score: " + QString::number(score_op));
     QTimer::singleShot(6000, this, [=]() {
         // مخفی کردن و حذف لیبل‌های موقتی
         result_show->deleteLater();
         my_hand_rank_show->deleteLater();
         opponent_hand_rank_show->deleteLater();
-
-        // تمیز کردن صفحه بازی برای راند بعدی
         resetBoardForNewRound();
 
         // اعلام آمادگی برای شروع راند بعدی
@@ -160,11 +168,18 @@ void Poffer::finish_round(const QVector<Card>& op_card, const QString& result, c
 
 void Poffer::pause_requset()
 {
-    QWidget* overlay = nullptr;
+    num_pause++;
 
-   // جلوگیری از اضافه کردن چندباره
 
-    overlay = new QWidget(this);
+    QJsonObject payload; // خالی
+    QJsonObject mainObject;
+    mainObject["command"] = "pause_request";
+    mainObject["payload"] = payload;
+    QJsonDocument doc(mainObject);
+    QByteArray dataToSend = doc.toJson(QJsonDocument::Compact);
+    client_socket->sendData(dataToSend); // فراموش نشود ارسال شود
+
+    QWidget* overlay = new QWidget(this);
     overlay->setGeometry(this->rect());
     overlay->setStyleSheet("background-color: rgba(0, 0, 0, 150);");
     overlay->show();
@@ -173,35 +188,46 @@ void Poffer::pause_requset()
     resumeButton->setFixedSize(200, 80);
     resumeButton->setStyleSheet(
         "QPushButton {"
-        "    background-color: #4CAF50;"      // سبز ملایم
-        "    color: white;"                    // متن سفید واضح
-        "    font-size: 20px;"                 // متن کمی بزرگ‌تر
-        "    font-weight: bold;"              // ضخیم برای دیده شدن بهتر
-        "    padding: 10px 20px;"             // فاصله مناسب
+        "    background-color: #4CAF50;"
+        "    color: white;"
+        "    font-size: 20px;"
+        "    font-weight: bold;"
+        "    padding: 10px 20px;"
         "    border: none;"
-        "    border-radius: 12px;"            // گردی مناسب
+        "    border-radius: 12px;"
         "}"
         "QPushButton:hover {"
-        "    background-color: #45A049;"      // سبز تیره‌تر هنگام هاور
+        "    background-color: #45A049;"
         "}"
         "QPushButton:pressed {"
-        "    background-color: #3e8e41;"      // سبز تیره‌تر هنگام کلیک
+        "    background-color: #3e8e41;"
         "}"
-        );    resumeButton->move((overlay->width() - resumeButton->width()) / 2,(overlay->height() - resumeButton->height()) / 2 );
+        );
+    resumeButton->move((overlay->width() - resumeButton->width()) / 2, (overlay->height() - resumeButton->height()) / 2);
     resumeButton->show();
-    connect(resumeButton, &QPushButton::clicked, this ,[=](){
 
+    connect(resumeButton, &QPushButton::clicked, this, [=]() {
+        QJsonObject payload; // خالی
+        QJsonObject mainObject;
+        mainObject["command"] = "Resume_request";
+        mainObject["payload"] = payload;
+        QJsonDocument doc(mainObject);
+        QByteArray dataToSend = doc.toJson(QJsonDocument::Compact);
+        client_socket->sendData(dataToSend);
         overlay->hide();
-       // overlay->deleteLater();
+        if(num_pause>1){
+        overlay->deleteLater();
+        pauseButton->hide();
+        pauseButton->deleteLater();
+        }
+
     });
-
-
     QPushButton* exitButton = new QPushButton("Exit Game", overlay);
     exitButton->setFixedSize(200, 80);
     exitButton->move((overlay->width() - exitButton->width()) / 2, overlay->height() / 2 + 70);
     exitButton->setStyleSheet(
         "QPushButton {"
-        "    background-color: #E53935;"      // قرمز زیبا و قابل دید
+        "    background-color: #E53935;"
         "    color: white;"
         "    font-size: 18px;"
         "    font-weight: bold;"
@@ -216,16 +242,22 @@ void Poffer::pause_requset()
         "    background-color: #C62828;"
         "}"
         );
-
-    // کانکشن بستن به اسلات خروج از بازی
     exitButton->show();
     connect(exitButton, &QPushButton::clicked, this, [=]() {
-        // اگر نیاز است قبل از خروج پیام pause یا خروج ارسال شود اینجا بزن
+        QJsonObject payload;
+        QJsonObject mainObject;
+        mainObject["command"] = "Exit_request";
+        mainObject["payload"] = payload;
+        QJsonDocument doc(mainObject);
+        QByteArray dataToSend = doc.toJson(QJsonDocument::Compact);
+        client_socket->sendData(dataToSend);
         overlay->hide();
+        this->close();
+        menu* mn = new menu(username, client_socket);
+        mn->show();
     });
-
-
 }
+
 
 
 
@@ -282,11 +314,17 @@ void Poffer::onServerResponse(QByteArray data){
         }
         auto payload = obj["payload"].toObject();
         QString result = payload["result"].toString();
+        my_point_labale->setText(payload["my_score"].toString());
+
         QString my_hand_rank = payload["my_hand_rank"].toString();
         QString opponent_hand_rank = payload["opponent_hand_rank"].toString();
-        QString my_score = payload["my_score"].toString();
-        QString opponent_score = payload["opponent_score"].toString();
-        emit round_result(opponent_hand,result,my_hand_rank,opponent_hand_rank,my_score,opponent_score);
+
+        playerScore = payload["my_score"].toString();
+        opScore = payload["opponent_score"].toString();
+        score_me = payload["my_score"].toInt();
+        score_op = payload["opponent_score"].toInt();
+        qDebug()<<payload["opponent_score"].toInt();
+        emit round_result(opponent_hand,result,my_hand_rank,opponent_hand_rank,payload["my_score"].toString(),payload["opponent_score"].toString());
     }
 
     else if(obj["response"].toString()=="game_over"){
@@ -307,13 +345,13 @@ void Poffer::show_point(){
     my_point_labale = new QLabel(this);
     op_point_labale = new QLabel(this);
 
-    my_point_labale->setText("my point :0");
+    my_point_labale->setText("my point : " + playerScore  );
     my_point_labale->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
     my_point_labale->setStyleSheet("color: white; background-color: rgba(0,0,0,0.5); font: 14pt 'Segoe UI'; padding: 5px; border-radius: 8px;");
     my_point_labale->setGeometry(20, 680, 200, 40);
     my_point_labale->show();
 
-    op_point_labale->setText("enemy point :");
+    op_point_labale->setText("enemy point : " + opScore);
     op_point_labale->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
     op_point_labale->setStyleSheet("color: white; background-color: rgba(0,0,0,0.5); font: 14pt 'Segoe UI'; padding: 5px; border-radius: 8px;");
     op_point_labale->setGeometry(20, 20, 200, 40);
@@ -329,7 +367,7 @@ void Poffer::finish_game(QString result){
     result_show->setStyleSheet("color: white; background-color: #444; font: 16pt;");
     result_show->setGeometry(400, 300, 500, 50);
     result_show->show();
-    menu* mn = new menu();
+    menu* mn = new menu(username,client_socket);
     mn->show();
 }
 
@@ -469,16 +507,88 @@ void Poffer::pause_button(){
     }
 )");
 }
-/*
 
+/*
 void Poffer::choose_Card(QVector<Card> c, QString starter, bool a)
 {
+    // حذف دکمه‌های انتخاب قبلی
     for (auto* button : findChildren<QPushButton*>()) {
         if (button->property("is_selection_card").toBool()) {
             button->deleteLater();
         }
     }
 
+    // آماده‌سازی تایمر ۲۰ ثانیه‌ای
+    QTimer* hiddenTimer = new QTimer(this);
+    hiddenTimer->setSingleShot(true);
+    hiddenTimer->start(20000); // ۲۰ ثانیه
+
+    // آماده‌سازی لیبل شمارش معکوس
+    QLabel* countdownLabel = new QLabel(this);
+    countdownLabel->setAlignment(Qt::AlignCenter);
+    countdownLabel->setStyleSheet(
+        "color: white; "
+        "background-color: rgba(0, 0, 0, 150); "
+        "font: 20pt 'Segoe UI'; "
+        "border-radius: 10px; "
+        "padding: 8px;"
+        );
+    countdownLabel->setGeometry((this->width() - 200) / 2, 100, 200, 50);
+    countdownLabel->hide();
+
+    // اگر ۲۰ ثانیه گذشت و انتخابی نشد، شمارش ۱۰ ثانیه‌ای با نمایش شروع شود
+    connect(hiddenTimer, &QTimer::timeout, this, [=]() mutable {
+        countdownLabel->show();
+        int remainingTime = 10;
+        countdownLabel->setText(QString::number(remainingTime));
+
+        QTimer* visibleTimer = new QTimer(this);
+        visibleTimer->start(1000);
+
+        connect(visibleTimer, &QTimer::timeout, this, [=]() mutable {
+            remainingTime--;
+            countdownLabel->setText(QString::number(remainingTime));
+
+            if (remainingTime <= 0) {
+                visibleTimer->stop();
+                countdownLabel->deleteLater();
+
+                // انتخاب تصادفی کارت
+                if (!c.isEmpty()) {
+                    Card randomCard = c[QRandomGenerator::global()->bounded(c.size())];
+
+                    myhand.append(randomCard);
+                    int handIndex = myhand.size() - 1;
+                    if (handIndex < player_cards_place.size()) {
+                        player_cards_place[handIndex]->setIcon(QIcon(randomCard.imagePath));
+                        player_cards_place[handIndex]->setIconSize(QSize(130, 180));
+                    }
+
+                    QJsonObject card_obj = randomCard.toJson();
+                    QJsonObject payload;
+                    payload["selected_card"] = card_obj;
+                    QJsonObject mainobject;
+                    mainobject["command"] = "select_card";
+                    mainobject["payload"] = payload;
+
+                    QJsonDocument doc(mainobject);
+                    client_socket->sendData(doc.toJson(QJsonDocument::Compact));
+
+                    // حذف دکمه‌های انتخاب کارت
+                    for (auto* btn : findChildren<QPushButton*>()) {
+                        if (btn->property("is_selection_card").toBool()) {
+                            btn->hide();
+                            btn->deleteLater();
+                        }
+                    }
+
+                    emit card_selected();
+                }
+            }
+        });
+    });
+
+    // نمایش کارت‌ها با انیمیشن
     int cardWidth = 130;
     int cardHeight = 180;
     int spacing = 20;
@@ -486,35 +596,34 @@ void Poffer::choose_Card(QVector<Card> c, QString starter, bool a)
     int startX = (this->width() - totalWidth) / 2;
     int y = (this->height() - cardHeight) / 2;
 
-    // با یک حلقه، برای هر کارت یک دکمه می‌سازیم
     for (int i = 0; i < c.size(); ++i) {
         QPushButton* button = new QPushButton(this);
-        button->setProperty("is_selection_card", true); // یک مشخصه برای شناسایی این دکمه‌ها
+        button->setProperty("is_selection_card", true);
 
-        Card currentCard = c[i]; // کارت مربوط به این دکمه
+        Card currentCard = c[i];
 
         button->setIcon(QIcon(currentCard.imagePath));
         button->setIconSize(QSize(cardWidth, cardHeight));
         button->setFixedSize(cardWidth, cardHeight);
-        button->move(startX + i * (cardWidth + spacing), y);
+        button->move(20, 255); // موقعیت اولیه برای انیمیشن
+        auto pos = button->pos();
+        pos.setX(startX + i * (cardWidth + spacing));
+        pos.setY(y);
+        animation(pos, button);
         button->show();
 
-        // برای هر دکمه یک connect جداگانه با استفاده از لامبدا می‌نویسیم
+        // انتخاب کارت با کلیک
         connect(button, &QPushButton::clicked, this, [=]() {
-            qDebug() << "Card selected:" << currentCard.rank;
+            hiddenTimer->stop();      // توقف تایمر ۲۰ ثانیه‌ای
+            countdownLabel->deleteLater(); // حذف شمارش معکوس اگر نمایش داده شده باشد
 
-            // ۱. کارت انتخاب شده را به دست بازیکن اضافه می‌کنیم
             myhand.append(currentCard);
-
-            // ۲. تصویر کارت را در جایگاه صحیح دست نهایی قرار می‌دهیم
-            // اندیس صحیح، سایز فعلی دست قبل از اضافه کردن کارت جدید است
             int handIndex = myhand.size() - 1;
-            if(handIndex < player_cards_place.size()) {
+            if (handIndex < player_cards_place.size()) {
                 player_cards_place[handIndex]->setIcon(QIcon(currentCard.imagePath));
                 player_cards_place[handIndex]->setIconSize(QSize(cardWidth, cardHeight));
             }
 
-            // ۳. پیام را برای سرور می‌سازیم و ارسال می‌کنیم
             QJsonObject card_obj = currentCard.toJson();
             QJsonObject payload;
             payload["selected_card"] = card_obj;
@@ -525,7 +634,7 @@ void Poffer::choose_Card(QVector<Card> c, QString starter, bool a)
             QJsonDocument doc(mainobject);
             client_socket->sendData(doc.toJson(QJsonDocument::Compact));
 
-            // ۴. تمام دکمه‌های انتخاب کارت را از صفحه حذف می‌کنیم
+            // حذف دکمه‌های انتخاب کارت
             for (auto* btn : findChildren<QPushButton*>()) {
                 if (btn->property("is_selection_card").toBool()) {
                     btn->hide();
@@ -533,19 +642,22 @@ void Poffer::choose_Card(QVector<Card> c, QString starter, bool a)
                 }
             }
 
-            // ۵. سیگنال می‌دهیم که انتخاب انجام شد
             emit card_selected();
         });
     }
 }
 
+
 */
+
 
 void Poffer::choose_Card(QVector<Card> c, QString starter, bool a) {
     for(auto a:c){
 
         qDebug()<<a.suit;
     }
+
+
     int cardWidth = 130;
     int cardHeight = 180;
     int spacing = 20;
@@ -565,7 +677,88 @@ void Poffer::choose_Card(QVector<Card> c, QString starter, bool a) {
     QPushButton *button7 = new QPushButton(this);
 
 
+    QTimer* hiddenTimer = new QTimer(this);
+    QTimer* visibleTimer = new QTimer(this);
+    hiddenTimer->setSingleShot(true);
+    hiddenTimer->start(20000); // ۲۰ ثانیه
 
+    // آماده‌سازی لیبل شمارش معکوس
+    QLabel* countdownLabel = new QLabel(this);
+    countdownLabel->setAlignment(Qt::AlignCenter);
+    countdownLabel->setStyleSheet(
+        "color: white; "
+        "background-color: rgba(0, 0, 0, 150); "
+        "font: 20pt 'Segoe UI'; "
+        "border-radius: 10px; "
+        "padding: 8px;"
+        );
+    countdownLabel->setGeometry((this->width() - 200) / 2, 100, 200, 50);
+    countdownLabel->hide();
+
+    // اگر ۲۰ ثانیه گذشت و انتخابی نشد، شمارش ۱۰ ثانیه‌ای با نمایش شروع شود
+    connect(hiddenTimer, &QTimer::timeout, this, [=]() mutable {
+        countdownLabel->show();
+        int remainingTime = 10;
+        countdownLabel->setText(QString::number(remainingTime));
+        time_warning++;
+        if(time_warning>=2){
+            QJsonObject playload;
+            QJsonObject mainobject;
+            mainobject["command"] = "timeout_lost";
+            mainobject["payload"] = playload;
+            QJsonDocument doc(mainobject);
+            auto json_to_send = doc.toJson(QJsonDocument::Compact);
+            client_socket->sendData(json_to_send);
+            menu* mn = new menu(username,client_socket);
+            this->close();
+            mn->show();
+        }
+        visibleTimer->start(1000);
+
+        connect(visibleTimer, &QTimer::timeout, this, [=]() mutable {
+
+            remainingTime--;
+            countdownLabel->setText(QString::number(remainingTime));
+
+            if (remainingTime <= 0) {
+                visibleTimer->stop();
+                countdownLabel->deleteLater();
+
+                // انتخاب تصادفی کارت
+                if (!c.isEmpty()) {
+                    Card randomCard = c[QRandomGenerator::global()->bounded(c.size())];
+
+                    myhand.append(randomCard);
+                    int handIndex = myhand.size() - 1;
+                    if (handIndex < player_cards_place.size()) {
+                        player_cards_place[handIndex]->setIcon(QIcon(randomCard.imagePath));
+                        player_cards_place[handIndex]->setIconSize(QSize(130, 180));
+                    }
+
+                    QJsonObject card_obj = randomCard.toJson();
+                    QJsonObject payload;
+                    payload["selected_card"] = card_obj;
+                    QJsonObject mainobject;
+                    mainobject["command"] = "select_card";
+                    mainobject["payload"] = payload;
+
+                    QJsonDocument doc(mainobject);
+                    client_socket->sendData(doc.toJson(QJsonDocument::Compact));
+
+                    button1->hide();
+                    button2->hide();
+                    button3->hide();
+                    button4->hide();
+                    button5->hide();
+                    button6->hide();
+                    button7->hide();
+                    hiddenTimer->stop();
+                    visibleTimer->stop();
+                    emit card_selected();
+                }
+            }
+        });
+    });
 
 
     if(c.size()>0){
@@ -614,6 +807,10 @@ void Poffer::choose_Card(QVector<Card> c, QString starter, bool a) {
         button5->hide();
         button6->hide();
         button7->hide();
+        hiddenTimer->stop();
+        visibleTimer->stop();
+        countdownLabel->hide();
+
         emit(card_selected());
 
 
@@ -666,6 +863,10 @@ void Poffer::choose_Card(QVector<Card> c, QString starter, bool a) {
         button5->hide();
         button6->hide();
         button7->hide();
+        hiddenTimer->stop();
+        visibleTimer->stop();
+        countdownLabel->hide();
+
         emit card_selected();
     });
     }
@@ -714,6 +915,10 @@ void Poffer::choose_Card(QVector<Card> c, QString starter, bool a) {
         button5->hide();
         button6->hide();
         button7->hide();
+        hiddenTimer->stop();
+        visibleTimer->stop();
+        countdownLabel->hide();
+
         emit(card_selected());
 
     });
@@ -764,6 +969,10 @@ void Poffer::choose_Card(QVector<Card> c, QString starter, bool a) {
         button5->hide();
         button6->hide();
         button7->hide();
+        hiddenTimer->stop();
+        visibleTimer->stop();
+        countdownLabel->hide();
+
         emit(card_selected());
 
     });
@@ -814,6 +1023,10 @@ void Poffer::choose_Card(QVector<Card> c, QString starter, bool a) {
         button5->hide();
         button6->hide();
         button7->hide();
+        hiddenTimer->stop();
+        visibleTimer->stop();
+        countdownLabel->hide();
+
         emit(card_selected());
 
     });
@@ -864,6 +1077,10 @@ void Poffer::choose_Card(QVector<Card> c, QString starter, bool a) {
         button5->hide();
         button6->hide();
         button7->hide();
+        hiddenTimer->stop();
+        visibleTimer->stop();
+        countdownLabel->hide();
+
         emit(card_selected());
 
     });
@@ -915,13 +1132,16 @@ void Poffer::choose_Card(QVector<Card> c, QString starter, bool a) {
             button5->hide();
             button6->hide();
             button7->hide();
+            hiddenTimer->stop();
+            visibleTimer->stop();
+            countdownLabel->hide();
+
             emit(card_selected());
 
         });
     }
 
 }
-
 
 
 

@@ -190,7 +190,7 @@ void Login::onServerResponse(QByteArray data) {
     if (read_json(data)) {
        // QMessageBox::information(this, "Success", "Login up successfully!");
         this->close();
-        menu* l = new menu();
+        menu* l = new menu(username , mysocket);
         l->set(username,name,lastname,gmail,phone_num,pass,mysocket);
         this->close();
         l->show();

@@ -30,8 +30,10 @@ class Poffer : public QWidget
     QPushButton* pauseButton;
     QPushButton* continueButton;
     int round;
-
-
+    int num_pause;
+    QString opScore;
+    QString playerScore;
+    int time_warning;
    // QString starter;
    // Card player_start;
     //Card opp_start;

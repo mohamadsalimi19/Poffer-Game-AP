@@ -7,11 +7,12 @@
 #include <QJsonObject>
 #include<signup.h>
 #include<menu.h>
-information::information(QWidget *parent)
+information::information(QString user, SocketManager* s ,QWidget *parent)
     : QWidget(parent)
     , ui(new Ui::information)
 {
-
+    username = user;
+    mys = s;
 
     ui->setupUi(this);
     this->setFixedSize(this->width(), this->height());
@@ -115,7 +116,6 @@ void information::on_pushButton_clicked()
 }
 
 bool information::update(){
-    SocketManager* mys = new SocketManager();
     //mys->connectToServer();
     mys->sendData(json_to_send);
     auto res = mys->get_response();
@@ -240,7 +240,7 @@ void information::on_pushButton_2_clicked()
 void information::on_pushButton_7_clicked()
 {
     this->close();
-    menu* mn = new menu();
+    menu* mn = new menu(username , mys );
     mn->set(username,name,lastname,gmail,phone_num,pass,mys);
     this->close();
     mn->show();
