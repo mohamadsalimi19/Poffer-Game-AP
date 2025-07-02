@@ -48,6 +48,8 @@ public:
 
     Player* getPlayer(const QString& username);
 
+    void addGameResult(const QString& username, const QJsonObject& gameResult);
+
 };
 
 #endif // USERMANAGER_H

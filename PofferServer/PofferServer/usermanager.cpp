@@ -165,3 +165,13 @@ Player* UserManager::getPlayer(const QString& username)
 {
     return m_users.value(username, nullptr);
 }
+
+///////////////////////////////////////////////////////////////////
+void UserManager::addGameResult(const QString& username, const QJsonObject& gameResult)
+{
+    if (m_users.contains(username)) {
+        m_users.value(username)->addGameResult(gameResult);
+        saveUsers(); // update file
+    }
+}
+///////////////////////////////////////////////////////////////////

@@ -16,6 +16,8 @@ private:
     QString m_phoneNumber;
     // every player has a handler that help it to communicate with core game
     ClientHandler* m_handler = nullptr;
+    // hsitory
+    QList<QJsonObject> m_gameHistory;
 
 public:
     //constructor give a json and make player
@@ -40,6 +42,10 @@ public:
     void setHandler(ClientHandler* handler);
     // convet to json
     QJsonObject toJson() const;
+
+    void addGameResult(const QJsonObject& result);
+    const QList<QJsonObject>& getGameHistory() const;
+    void setGameHistory(const QList<QJsonObject>& history);
 
 };
 

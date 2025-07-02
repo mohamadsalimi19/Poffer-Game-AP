@@ -6,6 +6,7 @@
 #include <QList>
 #include <algorithm>
 #include <QTimer>
+#include "usermanager.h"
 
 // check this file again after complete another classes ::::: remembre mohamad !!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -506,6 +507,19 @@ void GameSession::endGame(Player* winner, const QString& reason)
     Player* loser = nullptr;
     if (winner) {
         loser = (winner == m_player1) ? m_player2 : m_player1;
+    }
+
+    // add to history
+    if (winner && loser) {
+        QJsonObject winnerResult;
+        winnerResult["result"] = "won";
+        winnerResult["opponent"] = loser->getUsername();
+        UserManager::instance()->addGameResult(winner->getUsername(), winnerResult);
+
+        QJsonObject loserResult;
+        loserResult["result"] = "lost";
+        loserResult["opponent"] = winner->getUsername();
+        UserManager::instance()->addGameResult(loser->getUsername(), loserResult);
     }
 
     // make json for winner
