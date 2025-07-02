@@ -21,6 +21,11 @@ GameSession::GameSession(Player* player1, Player* player2, QObject *parent)
     m_disconnectTimer = new QTimer(this);
     m_disconnectTimer->setSingleShot(true); // timer use just one time
     connect(m_disconnectTimer, &QTimer::timeout, this, &GameSession::onDisconnectTimerTimeout);
+
+    // delay
+    m_nextActionTimer = new QTimer(this);
+    m_nextActionTimer->setSingleShot(true);
+    connect(m_nextActionTimer, &QTimer::timeout, this, &GameSession::onStartDraftingPhaseTimerTimeout);
 }
 //////////////////////////////////////////////////////////////////////////////////////////
 void GameSession::startNewRound()
@@ -67,7 +72,7 @@ void GameSession::startNewRound()
         emit sendMessageToPlayer(m_player2, response);
 
         qWarning() << "///////////////////////////// start delay  ////////////////////";
-        QTimer::singleShot(5000, this, &GameSession::startDraftingPhase);
+
 
     } else {
         // another rounds
@@ -84,7 +89,9 @@ void GameSession::startNewRound()
     m_deck = Deck();
     m_deck.shuffle();
 
-    startDraftingPhase();
+    qDebug() << "Waiting 10 seconds before starting draft...";
+    m_nextActionTimer->start(10000);
+    //startDraftingPhase();
 }
 //////////////////////////////////////////////////////////////////////////////////////////
 void GameSession::startDraftingPhase()
@@ -594,4 +601,8 @@ Player* GameSession::getOpponent(Player* player) const
     return nullptr; // never reach here
 }
 
-
+//////////////////////////////////////////////////////////////////////////////////////////
+void GameSession::onStartDraftingPhaseTimerTimeout()
+{
+    startDraftingPhase();
+}
