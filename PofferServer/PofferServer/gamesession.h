@@ -52,6 +52,8 @@ private:
     QVector<Card> m_draftPool; // 7 cards that give to players
 
     bool m_isFirstPickInMiniRound = true;
+    // timre for delay
+    QTimer* m_nextActionTimer;
 
 public:
     GameSession(Player* player1, Player* player2, QObject *parent = nullptr);
@@ -85,6 +87,9 @@ public:
 signals:
     void gameFinished(GameSession* session);
     void sendMessageToPlayer(Player* player, const QJsonObject& message);
+
+private slots:
+    void onStartDraftingPhaseTimerTimeout();
 
 };
 
