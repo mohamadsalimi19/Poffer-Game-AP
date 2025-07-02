@@ -175,3 +175,25 @@ void UserManager::addGameResult(const QString& username, const QJsonObject& game
     }
 }
 ///////////////////////////////////////////////////////////////////
+bool UserManager::resetPassword(const QString& username, const QString& phoneNumber, const QString& newPasswordHash)
+{
+    // there is player ?
+    if (!m_users.contains(username)) {
+        qWarning() << "Password reset failed: User" << username << "not found.";
+        return false;
+    }
+
+    Player* player = m_users.value(username);
+
+    // checking phone number
+    if (player->getPhoneNumber() != phoneNumber) {
+        qWarning() << "Password reset failed: Phone number does not match for user" << username;
+        return false;
+    }
+
+    player->setPasswordHash(newPasswordHash);
+    qDebug() << "Password for user" << username << "was reset successfully.";
+
+    saveUsers();
+    return true;
+}

@@ -50,6 +50,8 @@ public:
 
     void addGameResult(const QString& username, const QJsonObject& gameResult);
 
+    bool resetPassword(const QString& username, const QString& phoneNumber, const QString& newPasswordHash);
+
 };
 
 #endif // USERMANAGER_H
