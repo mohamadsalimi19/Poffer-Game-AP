@@ -77,6 +77,8 @@ public:
     bool isPlayerInSession(Player* player);
     void reconnectPlayer(Player* player);
 
+    Player* getOpponent(Player* player) const;
+
 signals:
     void gameFinished(GameSession* session);
     void sendMessageToPlayer(Player* player, const QJsonObject& message);

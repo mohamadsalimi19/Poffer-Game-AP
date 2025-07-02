@@ -1,7 +1,7 @@
 #include "usermanager.h"
 
 ///////////////////////////////////////////////////////////////////
-// پیاده‌سازی الگوی Singleton
+// Singleton pattern
 UserManager* UserManager::instance()
 {
     static UserManager manager;
@@ -10,7 +10,7 @@ UserManager* UserManager::instance()
 ///////////////////////////////////////////////////////////////////
 UserManager::UserManager(QObject *parent) : QObject(parent)
 {
-    loadUsers(); // در زمان ساخته شدن، کاربران قبلی را از فایل بارگذاری می‌کنیم
+    loadUsers(); //load last players
 }
 ///////////////////////////////////////////////////////////////////
 void UserManager::loadUsers()
