@@ -30,6 +30,8 @@ void PofferServer::incomingConnection(qintptr socketDescriptor)
     // garantin delete space safety after end
     connect(thread, &QThread::finished, handler, &ClientHandler::deleteLater);
     connect(thread, &QThread::finished, thread, &QThread::deleteLater);
+    // connection game chat player
+    connect(handler, &ClientHandler::chatMessageReceived, GameManager::instance(), &GameManager::onChatMessageReceived);
 
     thread->start();
 }

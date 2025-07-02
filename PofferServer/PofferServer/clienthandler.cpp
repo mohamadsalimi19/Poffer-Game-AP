@@ -105,6 +105,9 @@ void ClientHandler::processMessage(const QJsonObject& message)
     else if (command == "request_profile_data") {
         handleRequestProfileData(payload);
     }
+    else if (command == "send_chat_message" && m_player) {
+        emit chatMessageReceived(m_player, payload["message"].toString());
+    }
     // TODO: دستورات دیگر مثل انتخاب کارت و ... را هم اینجا اضافه کن
 }
 //////////////////////////////////////////////////////////////////////////

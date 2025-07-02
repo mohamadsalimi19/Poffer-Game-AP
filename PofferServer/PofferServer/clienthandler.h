@@ -57,6 +57,7 @@ public slots:
 
 signals:
     void finished();
+    void chatMessageReceived(Player* sender, const QString& message);
 };
 
 #endif // CLIENTHANDLER_H
