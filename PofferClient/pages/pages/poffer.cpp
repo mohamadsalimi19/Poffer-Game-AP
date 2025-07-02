@@ -57,7 +57,8 @@ Poffer::Poffer(SocketManager* socket, QString username, QWidget *parent) :
 
 }
 bool finish_turn = false;
-
+int score_me = 0;
+int score_op = 0;
 void Poffer::paintEvent(QPaintEvent *event)
 {
     QPainter painter(this);
@@ -145,9 +146,9 @@ void Poffer::finish_round(const QVector<Card>& op_card, const QString& result, c
     opponent_hand_rank_show->setGeometry(400, 410, 500, 40);
     opponent_hand_rank_show->show();
     //my_point_labale->setText();
-    qDebug()<<playerScore<<"heyyyyyyyyyy";
-   // my_point_labale->setText(my_score);
-   // op_point_labale->setText(opponent_score);
+    qDebug()<<my_score<<"heeeeey";
+    my_point_labale->setText("Your Score: " + QString::number(score_me));
+    op_point_labale->setText("Opponent Score: " + QString::number(score_op));
     QTimer::singleShot(6000, this, [=]() {
         // مخفی کردن و حذف لیبل‌های موقتی
         result_show->deleteLater();
@@ -313,12 +314,17 @@ void Poffer::onServerResponse(QByteArray data){
         }
         auto payload = obj["payload"].toObject();
         QString result = payload["result"].toString();
+        my_point_labale->setText(payload["my_score"].toString());
+
         QString my_hand_rank = payload["my_hand_rank"].toString();
         QString opponent_hand_rank = payload["opponent_hand_rank"].toString();
 
         playerScore = payload["my_score"].toString();
         opScore = payload["opponent_score"].toString();
-        emit round_result(opponent_hand,result,my_hand_rank,opponent_hand_rank,playerScore,opScore);
+        score_me = payload["my_score"].toInt();
+        score_op = payload["opponent_score"].toInt();
+        qDebug()<<payload["opponent_score"].toInt();
+        emit round_result(opponent_hand,result,my_hand_rank,opponent_hand_rank,payload["my_score"].toString(),payload["opponent_score"].toString());
     }
 
     else if(obj["response"].toString()=="game_over"){
@@ -672,6 +678,7 @@ void Poffer::choose_Card(QVector<Card> c, QString starter, bool a) {
 
 
     QTimer* hiddenTimer = new QTimer(this);
+    QTimer* visibleTimer = new QTimer(this);
     hiddenTimer->setSingleShot(true);
     hiddenTimer->start(20000); // ۲۰ ثانیه
 
@@ -705,7 +712,6 @@ void Poffer::choose_Card(QVector<Card> c, QString starter, bool a) {
             this->close();
             mn->show();
         }
-        QTimer* visibleTimer = new QTimer(this);
         visibleTimer->start(1000);
 
         connect(visibleTimer, &QTimer::timeout, this, [=]() mutable {
@@ -801,6 +807,9 @@ void Poffer::choose_Card(QVector<Card> c, QString starter, bool a) {
         button6->hide();
         button7->hide();
         hiddenTimer->stop();
+        visibleTimer->stop();
+        countdownLabel->hide();
+
         emit(card_selected());
 
 
@@ -854,6 +863,9 @@ void Poffer::choose_Card(QVector<Card> c, QString starter, bool a) {
         button6->hide();
         button7->hide();
         hiddenTimer->stop();
+        visibleTimer->stop();
+        countdownLabel->hide();
+
         emit card_selected();
     });
     }
@@ -903,6 +915,9 @@ void Poffer::choose_Card(QVector<Card> c, QString starter, bool a) {
         button6->hide();
         button7->hide();
         hiddenTimer->stop();
+        visibleTimer->stop();
+        countdownLabel->hide();
+
         emit(card_selected());
 
     });
@@ -954,6 +969,9 @@ void Poffer::choose_Card(QVector<Card> c, QString starter, bool a) {
         button6->hide();
         button7->hide();
         hiddenTimer->stop();
+        visibleTimer->stop();
+        countdownLabel->hide();
+
         emit(card_selected());
 
     });
@@ -1005,6 +1023,9 @@ void Poffer::choose_Card(QVector<Card> c, QString starter, bool a) {
         button6->hide();
         button7->hide();
         hiddenTimer->stop();
+        visibleTimer->stop();
+        countdownLabel->hide();
+
         emit(card_selected());
 
     });
@@ -1056,6 +1077,9 @@ void Poffer::choose_Card(QVector<Card> c, QString starter, bool a) {
         button6->hide();
         button7->hide();
         hiddenTimer->stop();
+        visibleTimer->stop();
+        countdownLabel->hide();
+
         emit(card_selected());
 
     });
@@ -1108,6 +1132,9 @@ void Poffer::choose_Card(QVector<Card> c, QString starter, bool a) {
             button6->hide();
             button7->hide();
             hiddenTimer->stop();
+            visibleTimer->stop();
+            countdownLabel->hide();
+
             emit(card_selected());
 
         });
