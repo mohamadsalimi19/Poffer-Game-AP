@@ -274,21 +274,55 @@ void Poffer::finish_round(const QVector<Card>& op_card, const QString& result, c
 
 void Poffer::pause_requset()
 {
-   // hiddenTimer->stop();
-   // visibleTimer->stop();
     num_pause++;
 
-    QJsonObject payload; // خالی
+    if (!countdownLabel) {
+        countdownLabel = new QLabel(this);
+        countdownLabel->setGeometry(20, 20, 100, 40); // سمت چپ بالا
+        countdownLabel->setStyleSheet("color: white; background-color: rgba(0,0,0,0.5); font: 18pt 'Segoe UI'; padding: 5px; border-radius: 5px;");
+        countdownLabel->setAlignment(Qt::AlignCenter);
+    }
+    remain_time = 20;
+    countdownLabel->setText(QString::number(remain_time));
+    countdownLabel->show();
+
+    if (!pauseTimer) {
+        pauseTimer = new QTimer(this);
+        pauseTimer->setInterval(1000);
+        connect(pauseTimer, &QTimer::timeout, this, [this]() {
+            remain_time--;
+            countdownLabel->setText(QString::number(remain_time));
+            if (remain_time <= 0) {
+                pauseTimer->stop();
+                QJsonObject payload;
+                QJsonObject mainobject;
+                mainobject["command"] = "timeout_lost";
+                mainobject["payload"] = payload;
+                QJsonDocument doc(mainobject);
+                auto json_to_send = doc.toJson(QJsonDocument::Compact);
+                client_socket->sendData(json_to_send);
+
+                menu* mn = new menu(username, client_socket);
+                this->close();
+                mn->show();
+            }
+        });
+    }
+    pauseTimer->start();
+
+    QJsonObject payload;
     QJsonObject mainObject;
     mainObject["command"] = "stop_request";
     mainObject["payload"] = payload;
     QJsonDocument doc(mainObject);
     QByteArray dataToSend = doc.toJson(QJsonDocument::Compact);
-    client_socket->sendData(dataToSend); // فراموش نشود ارسال شود
+    client_socket->sendData(dataToSend);
 
-    QWidget* overlay = new QWidget(this);
-    overlay->setGeometry(this->rect());
-    overlay->setStyleSheet("background-color: rgba(0, 0, 0, 150);");
+    if (!overlay) {
+        overlay = new QWidget(this);
+        overlay->setGeometry(this->rect());
+        overlay->setStyleSheet("background-color: rgba(0, 0, 0, 150);");
+    }
     overlay->show();
 
     QPushButton* resumeButton = new QPushButton("Resume", overlay);
@@ -313,23 +347,30 @@ void Poffer::pause_requset()
     resumeButton->move((overlay->width() - resumeButton->width()) / 2, (overlay->height() - resumeButton->height()) / 2);
     resumeButton->show();
 
-    connect(resumeButton, &QPushButton::clicked, this, [=]() {
-        hiddenTimer->start(20000);
-        visibleTimer->start(20000);
-        QJsonObject payload; // خالی
+    connect(resumeButton, &QPushButton::clicked, this, [this]() {
+        // hiddenTimer->start(20000);
+        // visibleTimer->start(20000);
+
+        QJsonObject payload;
         QJsonObject mainObject;
         mainObject["command"] = "resume_request";
         mainObject["payload"] = payload;
         QJsonDocument doc(mainObject);
         QByteArray dataToSend = doc.toJson(QJsonDocument::Compact);
         client_socket->sendData(dataToSend);
+
         overlay->hide();
-        if(num_pause>1){
-        overlay->deleteLater();
-        pauseButton->hide();
-        pauseButton->deleteLater();
+        pauseTimer->stop();
+        countdownLabel->hide();
+
+        if (num_pause > 1) {
+            overlay->deleteLater();
+            overlay = nullptr;
+            pauseTimer->stop();
+            // اگر pauseButton هم عضو کلاس هست، مدیریتش کن
         }
     });
+
     QPushButton* exitButton = new QPushButton("Exit Game", overlay);
     exitButton->setFixedSize(200, 80);
     exitButton->move((overlay->width() - exitButton->width()) / 2, overlay->height() / 2 + 70);
@@ -351,7 +392,8 @@ void Poffer::pause_requset()
         "}"
         );
     exitButton->show();
-    connect(exitButton, &QPushButton::clicked, this, [=]() {
+
+    connect(exitButton, &QPushButton::clicked, this, [this]() {
         QJsonObject payload;
         QJsonObject mainObject;
         mainObject["command"] = "Exit_request";
@@ -359,12 +401,19 @@ void Poffer::pause_requset()
         QJsonDocument doc(mainObject);
         QByteArray dataToSend = doc.toJson(QJsonDocument::Compact);
         client_socket->sendData(dataToSend);
-        overlay->hide();
+
+        if (overlay) {
+            overlay->hide();
+            overlay->deleteLater();
+            overlay = nullptr;
+        }
+
         this->close();
         menu* mn = new menu(username, client_socket);
         mn->show();
     });
 }
+
 
 
 
@@ -478,7 +527,11 @@ void Poffer::onServerResponse(QByteArray data){
             if(player1==username) round_started(player1_card,player2_card);
 
             else round_started(player2_card,player1_card);
+
+
     }
+
+
 }
 
 void Poffer::show_point(){

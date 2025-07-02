@@ -37,6 +37,10 @@ class Poffer : public QWidget
     QTimer* hiddenTimer;
     QTimer* visibleTimer;
     QWidget* overlayPAUSE;
+    QTimer* pauseTimer = nullptr;
+    QLabel* countdownLabel = nullptr;
+    int remain_time = 20;
+    QWidget* overlay = nullptr;
    // QString starter;
    // Card player_start;
     //Card opp_start;
