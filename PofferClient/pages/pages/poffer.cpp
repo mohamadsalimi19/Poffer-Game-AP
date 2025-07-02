@@ -46,6 +46,7 @@ Poffer::Poffer(SocketManager* socket, QString username, QWidget *parent) :
     connect(pauseButton,&QPushButton::clicked,this,&Poffer::pause_requset);
     connect(this,&Poffer::op_disconnected,this,&Poffer::opponent_disconnected_show);
     connect(this,&Poffer::game_paused,this,&Poffer::game_pausedSLOT);
+    connect(this,&Poffer::game_resumed,this,&Poffer::game_resumedSLOT);
 
 
     if(num_pause>=2){
@@ -72,15 +73,8 @@ void Poffer::paintEvent(QPaintEvent *event)
 }
 
 void Poffer::game_resumedSLOT(){
-
-
-
-
-
-
-
-
-
+    overlayPAUSE->hide();
+    hiddenTimer->start(20000);
 }
 
 
@@ -89,6 +83,8 @@ void Poffer::game_resumedSLOT(){
 
 
 void Poffer::game_pausedSLOT(){
+    hiddenTimer->stop();
+    visibleTimer->stop();
     overlayPAUSE = new QWidget(this);
     overlayPAUSE->setGeometry(this->rect());
     overlayPAUSE->setStyleSheet("background-color: rgba(0, 0, 0, 150);");
