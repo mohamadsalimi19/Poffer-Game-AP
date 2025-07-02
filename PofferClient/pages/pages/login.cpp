@@ -5,6 +5,8 @@
 #include<menu.h>
 #include"QTimer"
 #include"QPainter"
+#include"mainwindow.h"
+
 Login::Login(QWidget *parent)
     : QWidget(parent)
     , ui(new Ui::Login)
@@ -230,7 +232,7 @@ bool Login::read_json(QByteArray res){
 void Login::on_pushButton_clicked()
 {
 
-    mysocket->connectToServer("127.0.0.1",8888);
+    mysocket->connectToServer(IP,8888);
     make_json();
     mysocket->sendData(json_to_send);
 
