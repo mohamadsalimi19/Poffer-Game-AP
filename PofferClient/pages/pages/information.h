@@ -29,12 +29,14 @@ protected:
     void paintEvent(QPaintEvent *event) override;
 
 public:
-    void set(QString username,QString name,QString lastname, QString gmail,QString phone_num,QString pass , SocketManager* s);
     void enter_filds();
     void make_json();
     bool read_json(QByteArray ar);
     bool update();
+    void getINFO();
+    void ServerResponse(QByteArray data);
     explicit information(QString user, SocketManager* s  ,QWidget *parent = nullptr);
+    void update_ui();
     ~information();
 
 private slots:
@@ -69,6 +71,11 @@ private slots:
 
 private:
     Ui::information *ui;
+
+signals:
+
+    void dataRECIVED();
+
 };
 
 #endif // INFORMATION_H

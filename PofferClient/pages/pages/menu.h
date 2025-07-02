@@ -22,6 +22,7 @@ public:
     void set(QString username,QString name,QString lastname, QString gmail,QString phone_num , QString pass , SocketManager* s);
     explicit menu( QString userna , SocketManager* s , QWidget *parent = nullptr );
     ~menu();
+    void getINFO();
 
 protected:
     void paintEvent(QPaintEvent *event) override;
