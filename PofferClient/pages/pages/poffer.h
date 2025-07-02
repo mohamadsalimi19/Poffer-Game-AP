@@ -64,6 +64,7 @@ public:
     void pause_button();
     void pause_requset();
     void resetBoardForNewRound();
+    void opponent_disconnected_show();
 
 private slots:
 
@@ -75,6 +76,7 @@ signals:
     void card_selected();
     void round_result(QVector<Card> , QString result ,QString my_hand_rank , QString opponent_hand_rank , QString my_score , QString opponent_score);
     void game_over(QString result);
+    void op_disconnected();
 private:
     Ui::Poffer *ui;
 };

@@ -44,6 +44,9 @@ Poffer::Poffer(SocketManager* socket, QString username, QWidget *parent) :
     connect(this,&Poffer::round_result,this,&Poffer::finish_round);
     connect(this,&Poffer::game_over,this,&Poffer::finish_game);
     connect(pauseButton,&QPushButton::clicked,this,&Poffer::pause_requset);
+    connect(this,&Poffer::op_disconnected,this,&Poffer::opponent_disconnected_show);
+
+
     if(num_pause>=2){
         pauseButton->setEnabled(false);
     }
@@ -87,7 +90,42 @@ void Poffer::start_round(){
     }
 }
 
-// این تابع جدید را به poffer.cpp اضافه کن
+
+
+void Poffer::opponent_disconnected_show(){
+    QWidget* overlay = new QWidget(this);
+    overlay->setGeometry(this->rect());
+    overlay->setStyleSheet("background-color: rgba(0, 0, 0, 150);");
+    overlay->show();
+
+    QLabel* messageLabel = new QLabel("Opponent has paused the game", overlay);
+    messageLabel->setAlignment(Qt::AlignCenter);
+    messageLabel->setFixedSize(500, 100);
+    messageLabel->move((overlay->width() - messageLabel->width()) / 2,
+                       (overlay->height() - messageLabel->height()) / 2);
+
+    messageLabel->setStyleSheet(
+        "QLabel {"
+        "    color: white;"
+        "    background-color: rgba(0, 0, 0, 180);"
+        "    font: bold 24pt 'Segoe UI';"
+        "    border: 2px solid white;"
+        "    border-radius: 15px;"
+        "    padding: 15px;"
+        "}"
+        );
+    messageLabel->show();
+}
+
+
+
+
+
+
+
+
+
+
 
 void Poffer::resetBoardForNewRound()
 {
@@ -332,6 +370,11 @@ void Poffer::onServerResponse(QByteArray data){
         QString result = payload["result"].toString();
         QString Reson = payload["reson"].toString();
         emit game_over(result);
+    }
+
+    else if(obj["response"].toString()=="opponent_disconnected"){
+
+        emit op_disconnected();
 
 
 
