@@ -34,6 +34,9 @@ class Poffer : public QWidget
     QString opScore;
     QString playerScore;
     int time_warning;
+    QTimer* hiddenTimer;
+    QTimer* visibleTimer;
+    QWidget* overlayPAUSE;
    // QString starter;
    // Card player_start;
     //Card opp_start;
@@ -47,7 +50,7 @@ public:
     void get_card();
     void choose_turn(QString& starter, Card& player_startcard, Card& opp_startcard);
    // void Json_turn();
-    void start_round();
+    //void start_round();
     Card find_card(QString rank , QString suit);
     void show_turn(Card p , Card o);
     void show_wait( );
@@ -65,6 +68,8 @@ public:
     void pause_requset();
     void resetBoardForNewRound();
     void opponent_disconnected_show();
+    void game_resumedSLOT();
+    void game_pausedSLOT();
 
 private slots:
 
@@ -77,6 +82,8 @@ signals:
     void round_result(QVector<Card> , QString result ,QString my_hand_rank , QString opponent_hand_rank , QString my_score , QString opponent_score);
     void game_over(QString result);
     void op_disconnected();
+    void game_resumed();
+    void game_paused();
 private:
     Ui::Poffer *ui;
 };
