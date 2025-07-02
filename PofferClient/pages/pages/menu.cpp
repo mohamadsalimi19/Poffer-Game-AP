@@ -5,6 +5,7 @@
 #include<QPushButton>
 #include<information.h>
 #include"start.h"
+#include"history.h"
 menu::menu(  QString user , SocketManager* s , QWidget *parent)
     : QWidget(parent)
     , ui(new Ui::menu)
@@ -169,6 +170,16 @@ void menu::on_pushButton_2_clicked(){
     this->close();
     sp->show();
 
+
+}
+
+
+void menu::on_pushButton_clicked()
+{
+
+    History* h = new History(username,mysocket);
+    this->close();
+    h->show();
 
 }
 

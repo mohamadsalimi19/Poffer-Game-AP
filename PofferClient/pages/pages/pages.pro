@@ -11,6 +11,7 @@ QT += network
 SOURCES += \
     card.cpp \
     forgot.cpp \
+    history.cpp \
     information.cpp \
     login.cpp \
     main.cpp \
@@ -24,6 +25,7 @@ SOURCES += \
 HEADERS += \
     card.h \
     forgot.h \
+    history.h \
     information.h \
     login.h \
     mainwindow.h \
@@ -35,6 +37,7 @@ HEADERS += \
 
 FORMS += \
     forgot.ui \
+    history.ui \
     information.ui \
     login.ui \
     mainwindow.ui \
