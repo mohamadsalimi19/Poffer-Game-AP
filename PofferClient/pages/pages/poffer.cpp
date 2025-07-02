@@ -16,7 +16,7 @@ Poffer::Poffer(SocketManager* socket, QString username, QWidget *parent) :
     username(username),
     round{0}
 {
-    ui->setupUi(this);    
+    ui->setupUi(this);
     this->setFixedSize(1300, 750);
     get_card();
     pause_button();
@@ -101,7 +101,8 @@ void Poffer::resetBoardForNewRound()
 
 void Poffer::finish_round(const QVector<Card>& op_card, const QString& result, const QString& my_hand_rank, const QString& opponent_hand_rank, const QString& my_score, const QString& opponent_score)
 {
-    // ۱. نمایش کارت‌های دست حریف
+    // ۱. نمایش کارت‌های دست
+    round = 0;
     int cardWidth = 130;
     int cardHeight = 180;
     for (int i = 0; i < 5 && i < op_card.size(); ++i) {
@@ -149,9 +150,10 @@ void Poffer::finish_round(const QVector<Card>& op_card, const QString& result, c
 
         // اعلام آمادگی برای شروع راند بعدی
         // این سیگنال می‌تواند باعث شود کلاینت دوباره درخواست بازی بدهد یا منتظر پیام سرور بماند
-        myhand.clear();
-        player_cards_place.clear();
-        op_cards_place.clear();
+       // myhand.clear();
+       // player_cards_place.clear();
+       // op_cards_place.clear();
+        round = 0;
         emit turn_showed();
     });
 }
@@ -467,11 +469,10 @@ void Poffer::pause_button(){
     }
 )");
 }
-
+/*
 
 void Poffer::choose_Card(QVector<Card> c, QString starter, bool a)
 {
-    // اگر دکمه‌های قدیمی از انتخاب قبلی وجود دارند، آنها را پاک می‌کنیم
     for (auto* button : findChildren<QPushButton*>()) {
         if (button->property("is_selection_card").toBool()) {
             button->deleteLater();
@@ -538,7 +539,9 @@ void Poffer::choose_Card(QVector<Card> c, QString starter, bool a)
     }
 }
 
-/*void Poffer::choose_Card(QVector<Card> c, QString starter, bool a) {
+*/
+
+void Poffer::choose_Card(QVector<Card> c, QString starter, bool a) {
     for(auto a:c){
 
         qDebug()<<a.suit;
@@ -917,7 +920,7 @@ void Poffer::choose_Card(QVector<Card> c, QString starter, bool a)
         });
     }
 
-}*/
+}
 
 
 
