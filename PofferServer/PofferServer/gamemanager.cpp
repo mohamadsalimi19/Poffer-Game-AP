@@ -89,4 +89,29 @@ void GameManager::onGameFinished(GameSession* session)
 }
 /////////////////////////////////////////////////////////////////////////
 
+void GameManager::onChatMessageReceived(Player* sender, const QString& message)
+{
+    qDebug() << "Chat message from" << sender->getUsername() << ":" << message;
 
+    // find session
+    for (GameSession* session : m_active_games) {
+        if (session->isPlayerInSession(sender)) {
+            // find emeny
+            Player* opponent = session->getOpponent(sender);
+            if (opponent) {
+                // make json
+                QJsonObject payload;
+                payload["sender"] = sender->getUsername();
+                payload["message"] = message;
+
+                QJsonObject response;
+                response["response"] = "new_chat_message";
+                response["payload"] = payload;
+
+                // send message to opponent
+                emit session->sendMessageToPlayer(opponent, response);
+            }
+            return;
+        }
+    }
+}

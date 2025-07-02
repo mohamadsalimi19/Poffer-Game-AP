@@ -570,3 +570,5 @@ Player* GameSession::getOpponent(Player* player) const
     }
     return nullptr; // never reach here
 }
+
+
