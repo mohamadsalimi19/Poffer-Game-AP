@@ -8,6 +8,7 @@
 #include <QJsonValue>
 #include"QTimer"
 #include"QPainter"
+#include<QMessageBox>
 signup::signup(QWidget *parent)
     : QWidget(parent)
     , ui(new Ui::signup)
@@ -244,7 +245,7 @@ void signup::on_lineEdit_3_textChanged(const QString &arg1) // username
 
 void signup::on_lineEdit_4_textChanged(const QString &arg1) //pass
 {
-    pass = hashPasswordSimple(arg1);
+    pass = arg1;
 }
 
 
@@ -290,7 +291,7 @@ void signup::makejason(){
     QJsonObject payloadObject;
     payloadObject["name"] = name;
     payloadObject["username"] = username;
-    payloadObject["password_hash"] = pass;
+    payloadObject["password_hash"] = hashPasswordSimple(pass);
     payloadObject["lastname"] = lastname;
     payloadObject["gmail"] = gmail;
     payloadObject["phone_number"] = phone_num;
@@ -301,32 +302,41 @@ void signup::makejason(){
     jason_to_send = doc.toJson(QJsonDocument::Compact);
 }
 
-bool signup::read_jason(QByteArray res){
+bool signup::read_jason(QByteArray res) {
     auto docjason = QJsonDocument::fromJson(res);
     QJsonObject mainobject = docjason.object();
-    if(mainobject["response"]=="auth_success"){
+    QJsonObject payload = mainobject["payload"].toObject();
+    if (mainobject["response"] == "auth_success") {
         return true;
     }
-    else{
+    else {
+        QString errorMessage = payload["message"].toString();
+        if (errorMessage.isEmpty()) {
+            errorMessage = "خطای نامشخص از سرور دریافت شد.";
+        }
+        QMessageBox::warning(this, "خطا در ثبت‌نام", errorMessage);
+        return false;
     }
-    return false;
+}
 
-    }
 
 void signup::on_pushButton_clicked()
 {
-    if(name==""||username==""||pass==""||gmail==""||lastname == ""||phone_num == ""){
-
+    if (name == "" || username == "" || gmail == "" || lastname == "" || phone_num == "") {
+        QMessageBox::warning(this, "اطلاعات ناقص", "لطفاً همه فیلدها را به‌طور کامل پر کنید.");
+    }
+    else if (pass.size() < 7) {
+        QMessageBox::warning(this, "رمز عبور کوتاه", "رمز عبور باید حداقل ۷ کاراکتر باشد.");
+    }
+    else if (!isValidEmail(gmail)) {
+        QMessageBox::warning(this, "ایمیل نامعتبر", "لطفاً یک ایمیل معتبر وارد کنید.");
+    }
+    else if (!isValidIranPhoneNumber(phone_num)) {
+        QMessageBox::warning(this, "شماره نامعتبر", "لطفاً یک شماره موبایل معتبر ایران وارد کنید.");
     }
 
-    else if(!isValidEmail(gmail)){
 
 
-    }
-
-    else if(!isValidIranPhoneNumber(phone_num)){
-
-    }
 
     else{
        makejason();
@@ -334,9 +344,7 @@ void signup::on_pushButton_clicked()
        mysocket->sendData(jason_to_send);
     }
 
-
-    }
-
+}
 
 
 
