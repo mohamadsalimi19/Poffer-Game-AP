@@ -190,20 +190,23 @@ void Login::on_lineEdit_2_textEdited(const QString &arg1)
 {
        pass = hashPasswordSimple(arg1);
 }
-
+bool suc = false;
 
 
 void Login::onServerResponse(QByteArray data) {
     if (read_json(data)) {
-       // QMessageBox::information(this, "Success", "Login up successfully!");
+      // QMessageBox::information(this, "Success", "Login up successfully!");
         this->close();
+      suc = true;
         menu* l = new menu(username , mysocket);
         l->set(username,name,lastname,gmail,phone_num,pass,mysocket);
         this->close();
         l->show();
     }
     else{
-       // QMessageBox::information(this, "Success", data);
+        if(!suc){
+        QMessageBox::information(this, "faild", data);
+        }
     }
 }
 

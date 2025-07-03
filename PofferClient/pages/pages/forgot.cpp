@@ -11,7 +11,6 @@ Forgot::Forgot(QWidget *parent)
     ui->setupUi(this);
     mysocket  = new SocketManager();
     connect(mysocket, &SocketManager::dataReceived, this, &Forgot::onServerResponse);
-
     connect(mysocket->get_socket(),&QTcpSocket::errorOccurred,this,[=](QAbstractSocket::SocketError socketError){
         if (socketError == QAbstractSocket::HostNotFoundError) {
             QMessageBox::warning(this, "Error", "سرور یافت نشد. لطفا IP را چک کنید.");
