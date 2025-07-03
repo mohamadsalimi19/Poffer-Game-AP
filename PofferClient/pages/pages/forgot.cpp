@@ -3,6 +3,7 @@
 #include<signup.h>
 #include"QPainter"
 #include"mainwindow.h"
+#include<QMessageBox>
 Forgot::Forgot(QWidget *parent)
     : QWidget(parent)
     , ui(new Ui::Forgot)
@@ -10,10 +11,17 @@ Forgot::Forgot(QWidget *parent)
     ui->setupUi(this);
     mysocket  = new SocketManager();
     connect(mysocket, &SocketManager::dataReceived, this, &Forgot::onServerResponse);
-    connect(mysocket,&SocketManager::connected,this,[=](){
-        make_json();
-        mysocket->sendData(json_to_send);
+
+    connect(mysocket->get_socket(),&QTcpSocket::errorOccurred,this,[=](QAbstractSocket::SocketError socketError){
+        if (socketError == QAbstractSocket::HostNotFoundError) {
+            QMessageBox::warning(this, "Error", "سرور یافت نشد. لطفا IP را چک کنید.");
+        }
     });
+
+    connect(mysocket,&SocketManager::dataReceived,this,[=](QByteArray d){
+        QMessageBox::warning(this, "warning", d);
+    });
+    mysocket->connectToServer(IP,8888);
 
 
 }
@@ -33,7 +41,7 @@ void Forgot::on_lineEdit_textChanged(const QString &arg1)
 
 void Forgot::on_lineEdit_2_textEdited(const QString &arg1)
 {
-    newpass = hashPasswordSimple(arg1);
+    newpass = arg1;
 }
 
 
@@ -43,9 +51,9 @@ void Forgot::make_json(){
     QJsonObject playload;
     playload["username"] = username;
     playload["phone_number"] = phonenum;
-    playload["newpassword"] = newpass;
+    playload["newpassword"] =hashPasswordSimple(newpass);
     QJsonObject mainobject;
-    mainobject["command"] = "forget";
+    mainobject["command"] = "forgot_password";
     mainobject["payload"] = playload;
     QJsonDocument doc(mainobject);
      json_to_send = doc.toJson(QJsonDocument::Compact);
@@ -56,7 +64,7 @@ bool Forgot::read_json(QByteArray res){
     QJsonDocument doc = QJsonDocument::fromJson(res);
     QJsonObject mainobj = doc.object();
     auto playload = mainobj["payload"].toObject();
-    if(mainobj["response"].toString()=="auth_success"){
+    if(1){
         return true;
     }
     else{
@@ -68,9 +76,15 @@ bool Forgot::read_json(QByteArray res){
 
 void Forgot::on_pushButton_clicked()
 {
-    mysocket->connectToServer("127.0.0.1",8888);
 
+    if(newpass.size()<8){
+        QMessageBox::warning(this, "Error", "طول پسورد کمه");
+    }
 
+    else{
+    make_json();
+    mysocket->sendData(json_to_send);
+    }
 
 }
 
@@ -99,6 +113,7 @@ void Forgot::on_pushButton_2_clicked()
 
 void Forgot::on_lineEdit_3_textChanged(const QString &arg1)
 {
+
 
     username = arg1;
 

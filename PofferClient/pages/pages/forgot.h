@@ -11,7 +11,7 @@ class Forgot : public QWidget
 {
     Q_OBJECT
     QString phonenum;
-    QString newpass;
+    QString newpass="";
     void make_json();
     bool read_json(QByteArray ar);
     QByteArray json_to_send;

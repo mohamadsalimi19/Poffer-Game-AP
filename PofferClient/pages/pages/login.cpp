@@ -6,7 +6,7 @@
 #include"QTimer"
 #include"QPainter"
 #include"mainwindow.h"
-
+#include<QMessageBox>
 Login::Login(QWidget *parent)
     : QWidget(parent)
     , ui(new Ui::Login)
@@ -14,6 +14,11 @@ Login::Login(QWidget *parent)
     ui->setupUi(this);
     mysocket = new SocketManager();
     connect(mysocket, &SocketManager::dataReceived, this, &Login::onServerResponse);
+    connect(mysocket->get_socket(),&QTcpSocket::errorOccurred,this,[=](QAbstractSocket::SocketError socketError){
+        if (socketError == QAbstractSocket::HostNotFoundError) {
+            QMessageBox::warning(this, "Error", "سرور یافت نشد. لطفا IP را چک کنید.");
+        }
+    });
     this->setFixedSize(this->width(), this->height());
     ui->label->setStyleSheet(R"(
     QLabel {
