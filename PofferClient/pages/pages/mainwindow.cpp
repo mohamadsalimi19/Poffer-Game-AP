@@ -4,6 +4,7 @@
 #include<QSettings>
 #include<socketmanager.h>
 #include<menu.h>
+#include<poffer.h>
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
@@ -46,6 +47,8 @@ void MainWindow::on_pushButton_clicked()
         Login* lp = new Login();
         this->close();
         lp->show();
+
+
 
 
     }

@@ -8,7 +8,8 @@
 #include<QLabel>
 #include"card.h"
 
-
+#include <QTextEdit>
+#include <QLineEdit>
 namespace Ui {
 class Poffer;
 }
@@ -41,6 +42,9 @@ class Poffer : public QWidget
     QLabel* countdownLabel = nullptr;
     int remain_time = 20;
     QWidget* overlay = nullptr;
+    QTextEdit* chatTextEdit = nullptr;
+    QLineEdit* chatLineEdit = nullptr;
+
    // QString starter;
    // Card player_start;
     //Card opp_start;
@@ -74,6 +78,9 @@ public:
     void opponent_disconnected_show();
     void game_resumedSLOT();
     void game_pausedSLOT();
+    void setupChatUI();
+    void send_chat_message(const QString& msg);
+
 
 private slots:
 
