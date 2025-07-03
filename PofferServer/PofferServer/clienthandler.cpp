@@ -108,7 +108,7 @@ void ClientHandler::processMessage(const QJsonObject& message)
      else if (command == "send_chat_message" && m_player) {
         emit chatMessageReceived(m_player, payload["message"].toString());
     }
-     else if (command == "timeout_lost") { // <<--- دستور جدید
+     else if (command == "timeout_lost") {
         handleTimeoutLost(payload);
     }
      else if (command == "stop_request") {
@@ -121,7 +121,7 @@ void ClientHandler::processMessage(const QJsonObject& message)
     else if (command == "forgot_password") {
         handleForgotPassword(payload);
     }
-    // TODO: دستورات دیگر مثل انتخاب کارت و ... را هم اینجا اضافه کن
+
 }
 //////////////////////////////////////////////////////////////////////////
 /// \brief ClientHandler::handleLogin
