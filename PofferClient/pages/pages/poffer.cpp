@@ -10,6 +10,8 @@
 #include"QMetaObject"
 #include"menu.h"
 #include<QRandomGenerator>
+#include <QTextEdit>
+#include <QLineEdit>
 Poffer::Poffer(SocketManager* socket, QString username, QWidget *parent) :
     QWidget(parent),
     client_socket(socket),
@@ -21,6 +23,7 @@ Poffer::Poffer(SocketManager* socket, QString username, QWidget *parent) :
     time_warning{0},
     ui(new Ui::Poffer)
 {
+    setupChatUI();
     ui->setupUi(this);
     this->setFixedSize(1300, 750);
     get_card();
@@ -66,6 +69,32 @@ Poffer::Poffer(SocketManager* socket, QString username, QWidget *parent) :
     show_point();
 
 }
+
+
+void Poffer::send_chat_message(const QString& msg) {
+    QJsonObject payload;
+    payload["message"] = msg;
+
+    QJsonObject mainObject;
+    mainObject["command"] = "send_chat_message";
+    mainObject["payload"] = payload;
+
+    QJsonDocument doc(mainObject);
+    QByteArray dataToSend = doc.toJson(QJsonDocument::Compact);
+
+    client_socket->sendData(dataToSend);
+}
+
+
+
+
+
+
+
+
+
+
+
 bool finish_turn = false;
 int score_me = 0;
 int score_op = 0;
@@ -122,6 +151,69 @@ void Poffer::game_resumedSLOT() {
  //   if (visibleTimer && !visibleTimer->isActive()) visibleTimer->start(1000);
 }
 
+
+void Poffer::setupChatUI() {
+    chatTextEdit = new QTextEdit(this);
+    chatTextEdit->setReadOnly(true);
+    chatTextEdit->setStyleSheet(
+        "QTextEdit {"
+        " background-color: #121212;"
+        " color: #eeeeee;"
+        " font: 12pt 'Segoe UI';"
+        " border: 2px solid #333;"
+        " border-radius: 10px;"
+        " padding: 6px;"
+        " }"
+        );
+
+    chatLineEdit = new QLineEdit(this);
+    chatLineEdit->setPlaceholderText("Type your message...");
+    chatLineEdit->setStyleSheet(
+        "QLineEdit {"
+        " background-color: #1e1e1e;"
+        " color: #ffffff;"
+        " font: 12pt 'Segoe UI';"
+        " border: 2px solid #555;"
+        " border-radius: 8px;"
+        " padding-left: 8px;"
+        " }"
+        );
+
+    QPushButton* sendButton = new QPushButton("Send", this);
+    sendButton->setStyleSheet(
+        "QPushButton {"
+        " background-color: #4CAF50;"
+        " color: white;"
+        " font: bold 11pt 'Segoe UI';"
+        " border: none;"
+        " border-radius: 8px;"
+        " }"
+        "QPushButton:hover {"
+        " background-color: #45A049;"
+        " }"
+        "QPushButton:pressed {"
+        " background-color: #3e8e41;"
+        " }"
+        );
+
+
+    chatTextEdit->setGeometry(980, 470, 300, 200);
+
+    chatLineEdit->setGeometry(980, 690, 220, 40);
+
+    sendButton->setGeometry(1220, 690, 70, 40);
+
+    connect(sendButton, &QPushButton::clicked, this, [=]() {
+        QString message = chatLineEdit->text().trimmed();
+        if (!message.isEmpty()) {
+            send_chat_message(message);
+            chatTextEdit->append(QString("<b><font color=\"#4CAF50\">You:</font></b> %1").arg(message));
+            chatLineEdit->clear();
+        }
+    });
+
+    connect(chatLineEdit, &QLineEdit::returnPressed, sendButton, &QPushButton::click);
+}
 
 
 
@@ -528,7 +620,13 @@ void Poffer::onServerResponse(QByteArray data){
 
             else round_started(player2_card,player1_card);
 
+    }
 
+    else if (obj["response"].toString() == "new_chat_message") {
+        QJsonObject payload = obj["payload"].toObject();
+        QString sender = payload["sender"].toString();
+        QString message = payload["message"].toString();
+        chatTextEdit->append(QString("<b><font color=\"#03A9F4\">%1:</font></b> %2").arg(sender, message));
     }
 
 
