@@ -51,7 +51,7 @@ void Forgot::make_json(){
     QJsonObject playload;
     playload["username"] = username;
     playload["phone_number"] = phonenum;
-    playload["newpassword"] =hashPasswordSimple(newpass);
+    playload["new_password_hash"] =hashPasswordSimple(newpass);
     QJsonObject mainobject;
     mainobject["command"] = "forgot_password";
     mainobject["payload"] = playload;
