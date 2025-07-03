@@ -47,7 +47,7 @@ void PofferServer::startServer(quint16 port)
     }
 }
 
-
+// this is a virtual function in qtcpsocket
 void PofferServer::incomingConnection(qintptr socketDescriptor)
 {
     qDebug() << "New client connecting..." << socketDescriptor;
