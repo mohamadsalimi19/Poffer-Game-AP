@@ -197,7 +197,7 @@ void Login::onServerResponse(QByteArray data) {
     if (read_json(data)) {
       // QMessageBox::information(this, "Success", "Login up successfully!");
         this->close();
-      suc = true;
+        suc = true;
         menu* l = new menu(username , mysocket);
         l->set(username,name,lastname,gmail,phone_num,pass,mysocket);
         this->close();
@@ -205,7 +205,7 @@ void Login::onServerResponse(QByteArray data) {
     }
     else{
         if(!suc){
-        QMessageBox::information(this, "faild", data);
+        //QMessageBox::information(this, "faild", data);
         }
     }
 }
