@@ -367,6 +367,15 @@ void Poffer::finish_round(const QVector<Card>& op_card, const QString& result, c
 void Poffer::pause_requset()
 {
     num_pause++;
+    if(num_pause>1){
+        pauseButton->hide();
+
+    }
+
+
+
+
+
 
     if (!countdownLabel) {
         countdownLabel = new QLabel(this);
