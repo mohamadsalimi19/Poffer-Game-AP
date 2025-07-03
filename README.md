@@ -39,23 +39,38 @@ A complete implementation of the two-player online card game "Poffer," developed
 
 ---
 
-## How to Run
+## How to Play (Using the Installers)
+
+Instructions for setting up and playing a two-player game on a local network.
 
 ### Prerequisites
-- C++17 Compiler
-- Qt 6 Library (including Core, Gui, Widgets, Network modules)
+- A 64-bit Windows operating system.
+- All players must be connected to the **same local network** (e.g., the same Wi-Fi router).
 
-### Running the Server
-1. Open the `PofferServer.pro` project in Qt Creator.
-2. Build the project in **Release** mode.
-3. Run the application. The server will start on port `8888` and display its local IP address in the console for clients to connect.
+### Step-by-Step Guide
 
-### Running the Client
-1. Open the `PofferClient.pro` project (or use the parent `Poffer-Game-AP.pro` project).
-2. Run the application.
-3. On the connection screen, enter the IP address displayed by the server and port `8888`.
-4. Register or log in to start playing.
+**Step 1: Install the Applications**
+- On the computer that will act as the server, run `PofferServer_Setup.exe` and complete the installation.
+- On each of the client computers, run `PofferClient_Setup.exe` and complete the installation.
 
+**Step 2: Start the Server**
+1.  The player hosting the game runs the installed **"Poffer Game Server"** application from their Start Menu.
+2.  A console window will appear and display the server's local IP address. The output will look something like this:
+    ```
+    Server started successfully on IP: 192.168.1.5 Port: 8888
+    ```
+3.  **Important:** The server host must share this IP address (e.g., `192.168.1.5`) with all other players.
+
+**Step 3: Start and Connect the Clients**
+1.  Each client player runs the installed **"Poffer Game"** application from their Start Menu.
+2.  The application will ask for the server's IP address. Players must enter the **IP address** provided by the server host.
+3.  The port should be kept as `8888`.
+4.  Click "Connect".
+
+**Step 4: Play the Game!**
+1.  Once connected, players can register for a new account or log in with an existing one.
+2.  From the main menu, players can request a new game.
+3.  When two players have requested a game, the server will automatically match them and the game will begin.
 ---
 
 ## Creators
